@@ -749,7 +749,7 @@ async function configurarInscricaoEvento(api) {
     bloquearBotao(submitBtn, false, 'Seguir para Pagamento')
 
     if (error) {
-      mostrarMensagem(form, 'Nao foi possivel guardar a inscricao. Verifique se este email ja esta inscrito.', 'erro')
+      mostrarMensagem(form, 'Nao foi possivel guardar a inscricao. Verifique se ja existe uma inscricao com este nome, email e numero de documento para este evento.', 'erro')
       return
     }
 
