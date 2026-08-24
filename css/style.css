@@ -1,9 +1,11 @@
 :root {
     --primary-color: #1a1a1a;
     --secondary-color: #333333;
-    --accent-color: #e63946;
+    --accent-color: #4F8A34;
+    --accent-dark: #2F5C1F;
+    --accent-light: #E3F0D9;
     --bg-color: #ffffff;
-    --bg-light: #f4f4f4;
+    --bg-light: #F6F9F3;
     --text-color: #555555;
     --border-color: #e5e5e5;
     --font-main: 'Inter', sans-serif;
@@ -51,7 +53,7 @@ ul {
     align-items: center;
     justify-content: center;
     padding: 12px 24px;
-    border-radius: 4px;
+    border-radius: 8px;
     font-weight: 500;
     cursor: pointer;
     transition: background 0.3s;
@@ -81,10 +83,10 @@ ul {
     gap: 10px;
     width: 100%;
     padding: 10px;
-    border: 1px solid var(--primary-color);
+    border: 1px solid var(--accent-color);
     background: transparent;
-    color: var(--primary-color);
-    border-radius: 4px;
+    color: var(--accent-color);
+    border-radius: 8px;
     font-size: 14px;
     font-weight: 500;
     margin-top: 10px;
@@ -162,7 +164,7 @@ body.home-page .nav-link {
     color: #ffffff;
     text-shadow: 0 2px 4px rgba(0,0,0,0.3);
     padding: 8px 16px; 
-    border-radius: 4px;
+    border-radius: 8px;
     transition: all 0.3s ease;
 }
 
@@ -212,6 +214,27 @@ body.home-page .nav-link.active {
     overflow: hidden;
     color: #ffffff;
     background-color: #000; /* Fundo base */
+}
+
+/* Aplicada apenas na página inicial (ver index.html) -- as outras 18 páginas
+   que também usam .hero-bg-slideshow como banner NÃO levam esta classe extra,
+   por isso mantêm o retângulo normal. */
+.hero-bg-slideshow.hero-mountain-edge {
+    clip-path: polygon(0 0, 100% 0, 100% 92%, 80% 100%, 55% 92%, 30% 100%, 0 92%);
+}
+
+@media (max-width: 768px) {
+    .hero-bg-slideshow.hero-mountain-edge {
+        clip-path: polygon(0 0, 100% 0, 100% 96%, 80% 100%, 55% 96%, 30% 100%, 0 96%);
+    }
+}
+
+/* O recorte em zigue-zague deixa "ver" o fundo da página por trás dos
+   entalhes -- sem isto, mostraria o branco padrão do body em vez de
+   combinar com a secção seguinte. Só afeta páginas com .hero-mountain-edge
+   (atualmente só a página inicial). */
+body:has(.hero-mountain-edge) {
+    background-color: var(--bg-light);
 }
 
 /* Contentor das Imagens */
@@ -318,6 +341,7 @@ body.home-page .nav-link.active {
 .features {
     padding: 80px 0;
     background-color: var(--bg-light);
+    border-top: 3px solid var(--accent-light);
 }
 
 .features-header {
@@ -340,7 +364,7 @@ body.home-page .nav-link.active {
     background: #fff;
     padding: 40px;
     border: 1px solid var(--border-color);
-    border-radius: 8px;
+    border-radius: 14px;
     transition: transform 0.3s ease;
 }
 
@@ -359,16 +383,32 @@ body.home-page .nav-link.active {
     font-size: 15px;
 }
 
+.feature-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: 14px;
+    background-color: var(--accent-light);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 20px;
+}
+
+.feature-icon svg {
+    width: 24px;
+    height: 24px;
+    stroke: var(--accent-dark);
+}
+
 .story-section {
     padding: 80px 0;
-    background-color: var(--bg-color);
-    border-top: 1px solid var(--border-color);
+    background-color: var(--bg-light);
 }
 
 .story-photo {
     width: 100%;
     height: auto;
-    border-radius: 8px;
+    border-radius: 14px;
     box-shadow: 0 10px 30px rgba(0,0,0,0.1);
     display: block;
 }
@@ -449,10 +489,11 @@ body.home-page .nav-link.active {
 }
 
 .project-image {
+    position: relative;
     width: 100%;
     height: 250px;
     background-color: var(--bg-light);
-    border-radius: 8px;
+    border-radius: 14px;
     overflow: hidden;
     margin-bottom: 20px;
     background-size: contain;
@@ -460,10 +501,23 @@ body.home-page .nav-link.active {
     background-repeat: no-repeat;
 }
 
+.project-date-badge {
+    position: absolute;
+    top: 12px;
+    left: 12px;
+    background-color: var(--accent-color);
+    color: #fff;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    padding: 5px 12px;
+    border-radius: 100px;
+}
+
 .image-placeholder {
     width: 100%;
     height: 100%;
-    background-color: #ddd; 
+    background-color: var(--bg-light);
     transition: transform 0.5s ease;
     background-size: contain;
     background-position: center center;
@@ -510,7 +564,7 @@ body.home-page .nav-link.active {
 .event-sidebar {
     background-color: var(--bg-light);
     padding: 30px;
-    border-radius: 8px;
+    border-radius: 14px;
     height: fit-content;
 }
 
@@ -550,7 +604,7 @@ body.home-page .nav-link.active {
     background: #fff;
     border: 1px solid var(--border-color);
     padding: 20px;
-    border-radius: 8px;
+    border-radius: 14px;
     text-align: center;
 }
 
@@ -580,7 +634,7 @@ body.home-page .nav-link.active {
     max-width: 100%;
     min-width: 0;
     border: 1px solid var(--border-color);
-    border-radius: 8px;
+    border-radius: 14px;
 }
 
 .participants-table {
@@ -620,7 +674,7 @@ body.home-page .nav-link.active {
 }
 .badge-socio { background-color: #e3f2fd; color: #1565c0; }
 .badge-nao-socio { background-color: #f5f5f5; color: #666; }
-.badge-pago { background-color: #e8f5e9; color: #2e7d32; }
+.badge-pago { background-color: var(--accent-light); color: var(--accent-dark); }
 .badge-pendente { background-color: #fff3e0; color: #ef6c00; }
 
 /* --- FORMULÁRIOS & CONTACTOS --- */
@@ -639,7 +693,7 @@ body.home-page .nav-link.active {
 .contact-form {
     background-color: var(--bg-light);
     padding: 40px;
-    border-radius: 8px;
+    border-radius: 14px;
 }
 
 .form-grid {
@@ -666,7 +720,7 @@ body.home-page .nav-link.active {
     width: 100%;
     padding: 12px 16px;
     border: 1px solid var(--border-color);
-    border-radius: 4px;
+    border-radius: 8px;
     font-family: inherit;
     font-size: 16px;
     color: var(--secondary-color);
@@ -847,7 +901,7 @@ body.home-page .nav-link.active {
 .profile-card {
     background: #fff;
     padding: 30px;
-    border-radius: 8px;
+    border-radius: 14px;
     border: 1px solid var(--border-color);
     text-align: center;
     min-width: 0;
@@ -914,7 +968,7 @@ body.home-page .nav-link.active {
 .content-box {
     background: #fff;
     padding: 40px;
-    border-radius: 8px;
+    border-radius: 14px;
     border: 1px solid var(--border-color);
 }
 

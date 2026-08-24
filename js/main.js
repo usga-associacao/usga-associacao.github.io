@@ -1161,12 +1161,15 @@ async function configurarListaEventos(api) {
 function renderCardEvento(ev, destino) {
   const imagem = ev.imagem_url || ''
   const dataFmt = ev.data_evento ? new Date(ev.data_evento).toLocaleDateString('pt-PT', { day:'2-digit', month:'short', year:'numeric' }) : ''
+  const dataBadge = ev.data_evento ? new Date(ev.data_evento).toLocaleDateString('pt-PT', { day:'2-digit', month:'short' }).toUpperCase() : ''
   const slug = ev.slug || ''
   const pagina = destino || 'evento-futuro.html'
   return `
     <a href="${pagina}?evento=${encodeURIComponent(slug)}" class="project-card">
-      <div class="project-image" style="background-image: url('${imagem}');"></div>
-      <div class="project-body">
+      <div class="project-image" style="background-image: url('${imagem}');">
+        ${dataBadge ? `<span class="project-date-badge">${dataBadge}</span>` : ''}
+      </div>
+      <div class="project-info">
         <h3>${ev.titulo || ''}</h3>
         <small style="color:#777;">${dataFmt}</small>
         <p style="margin-top:8px;color:#555;">${(ev.descricao_curta || '').slice(0,120)}</p>
