@@ -220,12 +220,12 @@ body.home-page .nav-link.active {
    que também usam .hero-bg-slideshow como banner NÃO levam esta classe extra,
    por isso mantêm o retângulo normal. */
 .hero-bg-slideshow.hero-mountain-edge {
-    clip-path: polygon(0 0, 100% 0, 100% 92%, 80% 100%, 55% 92%, 30% 100%, 0 92%);
+    clip-path: polygon(0 0, 100% 0, 100% 92%, 70% 100%, 50% 92%, 30% 100%, 0 92%);
 }
 
 @media (max-width: 768px) {
     .hero-bg-slideshow.hero-mountain-edge {
-        clip-path: polygon(0 0, 100% 0, 100% 96%, 80% 100%, 55% 96%, 30% 100%, 0 96%);
+        clip-path: polygon(0 0, 100% 0, 100% 96%, 70% 100%, 50% 96%, 30% 100%, 0 96%);
     }
 }
 
@@ -341,7 +341,19 @@ body:has(.hero-mountain-edge) {
 .features {
     padding: 80px 0;
     background-color: var(--bg-light);
-    border-top: 3px solid var(--accent-light);
+    position: relative;
+}
+
+.features::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 92%;
+    max-width: var(--container-width);
+    height: 1px;
+    background-color: var(--accent-light);
 }
 
 .features-header {
