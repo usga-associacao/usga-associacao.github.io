@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="pt-pt">
 <head>
     <meta charset="UTF-8">
@@ -619,6 +619,7 @@
             subscreverSuporteAdmin,
             getAdminQuotas, atualizarQuota, validarPagamento,
             formatarData, formatarMoeda, calcularValidadeQuota, DIAS_VALIDADE_QUOTA,
+            localParaISO, isoParaLocal,
             getConfiguracao, definirConfiguracao
         } from './js/supabase.js'
 
@@ -1081,8 +1082,8 @@
             document.getElementById('ev-descricao-curta').value = ev?.descricao_curta || ''
             document.getElementById('ev-descricao').value  = ev?.descricao || ''
             document.getElementById('ev-recomendacoes').value = ev?.recomendacoes || ''
-            document.getElementById('ev-data').value       = ev?.data_evento ? ev.data_evento.slice(0,16) : ''
-            document.getElementById('ev-fim-inscricoes').value = ev?.data_fim_inscricoes ? ev.data_fim_inscricoes.slice(0,16) : ''
+            document.getElementById('ev-data').value       = ev?.data_evento ? isoParaLocal(ev.data_evento) : ''
+            document.getElementById('ev-fim-inscricoes').value = ev?.data_fim_inscricoes ? isoParaLocal(ev.data_fim_inscricoes) : ''
             document.getElementById('ev-local').value      = ev?.local || ''
             document.getElementById('ev-vagas').value      = ev?.vagas || ''
             document.getElementById('ev-preco').value = ev?.preco ?? 0
@@ -1128,8 +1129,8 @@
                 descricao_curta:  document.getElementById('ev-descricao-curta').value.trim() || null,
                 descricao:        document.getElementById('ev-descricao').value.trim() || null,
                 recomendacoes:    document.getElementById('ev-recomendacoes').value.trim() || null,
-                data_evento:      document.getElementById('ev-data').value || null,
-                data_fim_inscricoes: document.getElementById('ev-fim-inscricoes').value || null,
+                data_evento:      localParaISO(document.getElementById('ev-data').value),
+                data_fim_inscricoes: localParaISO(document.getElementById('ev-fim-inscricoes').value),
                 local:            document.getElementById('ev-local').value.trim() || null,
                 vagas:            parseInt(document.getElementById('ev-vagas').value) || null,
                 preco:            parseFloat(document.getElementById('ev-preco').value) || 0,
