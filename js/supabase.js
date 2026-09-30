@@ -1,4 +1,4 @@
-﻿// USGA - cliente Supabase e funcoes de dados.
+// USGA - cliente Supabase e funcoes de dados.
 // Este ficheiro deve ser importado em scripts type="module".
 
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
@@ -500,6 +500,21 @@ export function formatarData(dataISO) {
     month: 'long',
     year: 'numeric'
   })
+}
+
+export function localParaISO(valorLocal) {
+  if (!valorLocal) return null
+  const d = new Date(valorLocal)
+  if (isNaN(d.getTime())) return null
+  return d.toISOString()
+}
+
+export function isoParaLocal(valorISO) {
+  if (!valorISO) return ''
+  const d = new Date(valorISO)
+  if (isNaN(d.getTime())) return ''
+  const pad = n => String(n).padStart(2, '0')
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`
 }
 
 // Quotas de sócio são válidas por 1 ano a partir da data de pagamento.
