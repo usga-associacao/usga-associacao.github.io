@@ -1124,3 +1124,203 @@ body:not(.home-page) .nav-toggle span {
         display: none !important;
     }
 }
+
+/* --- INSCRIÇÃO DE GRUPO E PROVAS --- */
+.inscricao-seccao {
+    margin: 10px 0 4px;
+    font-size: 18px;
+}
+
+.inscricao-ajuda {
+    font-size: 13px;
+    color: #777;
+    margin-bottom: 18px;
+}
+
+.participante-bloco {
+    border: 1px solid var(--border-color);
+    border-radius: 14px;
+    background: #fff;
+    padding: 20px;
+    margin-bottom: 20px;
+}
+
+.participante-topo {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+}
+
+.participante-topo legend {
+    font-weight: 700;
+    font-size: 16px;
+    padding: 0;
+}
+
+.participante-remover {
+    background: none;
+    border: none;
+    color: #d32f2f;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.participante-provas-titulo {
+    display: block;
+    font-weight: 500;
+    margin-bottom: 8px;
+}
+
+.provas-opcoes {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.form-group label.prova-opcao {
+    display: flex;
+    margin-bottom: 0;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 12px 14px;
+    border: 1px solid var(--border-color);
+    border-radius: 10px;
+    background: var(--bg-light);
+    cursor: pointer;
+    font-weight: 400;
+}
+
+.form-group label.prova-opcao:has(input:checked) {
+    border-color: var(--accent-color);
+    background: var(--accent-light);
+}
+
+.prova-opcao input {
+    width: auto;
+    margin-top: 4px;
+}
+
+.prova-opcao-texto {
+    flex: 1;
+    min-width: 0;
+}
+
+.prova-opcao-texto small {
+    display: block;
+    color: #666;
+    font-size: 13px;
+    white-space: pre-line;
+}
+
+.prova-opcao-valor {
+    font-weight: 700;
+    white-space: nowrap;
+}
+
+.prova-unica {
+    padding: 12px 14px;
+    border-radius: 10px;
+    background: var(--bg-light);
+    font-size: 14px;
+}
+
+.inscricao-total {
+    background: #fff;
+    border: 1px solid var(--primary-color);
+    border-radius: 14px;
+    padding: 18px 20px;
+    margin-bottom: 20px;
+    font-size: 14px;
+}
+
+.inscricao-total:empty {
+    display: none;
+}
+
+.inscricao-total-linha {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+    color: var(--text-color);
+    padding: 3px 0;
+}
+
+.inscricao-total-valor {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+    border-top: 1px solid var(--border-color);
+    margin-top: 8px;
+    padding-top: 10px;
+    font-size: 16px;
+}
+
+/* Provas e documentos nas páginas de evento */
+.provas-evento-lista {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-top: 10px;
+}
+
+.prova-evento {
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    padding: 14px 16px;
+}
+
+.prova-evento-topo {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+    font-weight: 700;
+}
+
+.prova-evento p {
+    margin-top: 6px;
+    font-size: 14px;
+    color: var(--text-color);
+    white-space: pre-line;
+}
+
+.documentos-grupo {
+    margin-bottom: 24px;
+}
+
+.documentos-grupo h4 {
+    font-size: 15px;
+    margin-bottom: 10px;
+}
+
+.documentos-lista {
+    list-style: none;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.documentos-lista a {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 14px;
+    border: 1px solid var(--border-color);
+    border-radius: 10px;
+    background: #fff;
+    color: var(--primary-color);
+    font-weight: 600;
+}
+
+.documentos-lista a:hover {
+    border-color: var(--accent-color);
+    color: var(--accent-color);
+}
+
+@media (max-width: 768px) {
+    .participante-bloco {
+        padding: 16px;
+    }
+}

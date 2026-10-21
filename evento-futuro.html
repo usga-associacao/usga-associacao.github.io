@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=0.75">
     <title>Detalhe do Evento - USGA</title>
-    <link rel="stylesheet" href="css/style.css?v=20260825">
+    <link rel="stylesheet" href="css/style.css?v=20261021">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap" rel="stylesheet">
@@ -64,9 +64,14 @@
                             <p id="recomendacoesEvento" style="color: var(--text-color);"></p>
                         </div>
 
+                        <div id="provasBox" style="display:none; margin-top: 30px;">
+                            <h3>Provas</h3>
+                            <div id="listaProvas" class="provas-evento-lista"></div>
+                        </div>
+
                         <div id="infoAdicionalBox" style="display:none; margin-top: 30px;">
                             <h3>Informação Adicional</h3>
-                            <ul id="listaInfoAdicional" style="list-style:none; padding:0; margin-top:10px;"></ul>
+                            <div id="listaInfoAdicional" style="margin-top:10px;"></div>
                         </div>
                     </div>
 
@@ -128,6 +133,7 @@
                                 <tr>
                                     <th>Nac.</th>
                                     <th>Nome do Participante</th>
+                                    <th class="col-prova" style="display:none;">Prova</th>
                                     <th>Equipa</th>
                                     <th>Dorsal</th>
                                     <th>Estado</th>
@@ -160,6 +166,6 @@
             });
         });
     </script>
-    <script src="js/main.js?v=20260825"></script>
+    <script src="js/main.js?v=20261021"></script>
 </body>
 </html>

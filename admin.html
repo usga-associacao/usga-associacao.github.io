@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=0.75">
     <title>Back-office - USGA</title>
-    <link rel="stylesheet" href="css/style.css?v=20260825">
+    <link rel="stylesheet" href="css/style.css?v=20261021">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap" rel="stylesheet">
@@ -47,6 +47,20 @@
         .modal-box input, .modal-box select, .modal-box textarea { width: 100%; padding: 8px 12px; border: 1px solid #ddd; border-radius: 6px; font-size: 16px; box-sizing: border-box; }
         .modal-box textarea { resize: vertical; min-height: 80px; }
         .modal-actions { display: flex; gap: 10px; margin-top: 20px; justify-content: flex-end; }
+        .modal-box.modal-largo { max-width: 720px; }
+        .modal-tabs { display: flex; gap: 4px; border-bottom: 1px solid #eee; margin-bottom: 18px; }
+        .modal-tab { background: none; border: none; border-bottom: 2px solid transparent; padding: 8px 14px; font-size: 14px; color: #666; cursor: pointer; margin-bottom: -1px; }
+        .modal-tab.active { border-bottom-color: var(--accent-color); color: var(--accent-color); font-weight: 700; }
+        .modal-tab-painel { display: none; }
+        .modal-tab-painel.active { display: block; }
+        .prova-row, .doc-row { border: 1px solid #eee; border-radius: 8px; padding: 12px; background: #fafafa; }
+        .prova-row-topo, .doc-row-topo { display: flex; gap: 8px; align-items: center; }
+        .prova-row input, .prova-row textarea, .doc-row input, .doc-row select { font-size: 14px; padding: 7px 10px; }
+        .prova-row textarea { min-height: 50px; margin-top: 8px; }
+        .doc-row-fonte { display: flex; gap: 8px; align-items: center; margin-top: 8px; }
+        .doc-row-fonte .doc-tipo { width: auto; flex-shrink: 0; }
+        .ev-docs-lista { display: flex; flex-direction: column; gap: 10px; margin-bottom: 8px; }
+        .doc-atual { font-size: 12px; color: #666; margin-top: 6px; }
         .btn-danger { background: #fee2e2; color: #991b1b; border: none; padding: 7px 14px; border-radius: 6px; cursor: pointer; font-size: 13px; font-weight: 700; }
         .btn-secondary { background: #f0f0f0; color: #444; border: none; padding: 7px 14px; border-radius: 6px; cursor: pointer; font-size: 13px; }
         .tag-aberto { background:#dcfce7; color:#166534; }
@@ -175,7 +189,7 @@
                         </div>
                         <div class="participants-table-wrapper">
                             <table class="participants-table">
-                                <thead><tr><th>Título</th><th>Data</th><th>Estado</th><th>Vagas</th><th>Ações</th></tr></thead>
+                                <thead><tr><th>Título</th><th>Data</th><th>Estado</th><th>Provas</th><th>Ações</th></tr></thead>
                                 <tbody id="tbl-eventos"><tr><td colspan="5" style="text-align:center;color:#999;">A carregar...</td></tr></tbody>
                             </table>
                         </div>
@@ -200,8 +214,8 @@
                         </div>
                         <div class="participants-table-wrapper">
                             <table class="participants-table">
-                                <thead><tr><th>Evento</th><th>Participante</th><th>Email</th><th>NIF</th><th>Localidade</th><th>Equipa</th><th>Seguro</th><th>Estado</th><th>Dorsal</th><th>T-shirt</th><th>Ações</th></tr></thead>
-                                <tbody id="tbl-inscricoes"><tr><td colspan="11" style="text-align:center;color:#999;">A carregar...</td></tr></tbody>
+                                <thead><tr><th>Evento</th><th>Prova</th><th>Participante</th><th>Email</th><th>NIF</th><th>Localidade</th><th>Equipa</th><th>Seguro</th><th>Estado</th><th>Dorsal</th><th>T-shirt</th><th>Ações</th></tr></thead>
+                                <tbody id="tbl-inscricoes"><tr><td colspan="12" style="text-align:center;color:#999;">A carregar...</td></tr></tbody>
                             </table>
                         </div>
                     </div>
@@ -415,7 +429,7 @@
                             <div class="box-header"><h3>Modelo: Inscrição Pendente de Pagamento</h3></div>
                             <div class="form-group"><label>Assunto</label><input type="text" id="tpl-pendente-assunto"></div>
                             <div class="form-group"><label>Corpo</label><textarea id="tpl-pendente-corpo" rows="10"></textarea></div>
-                            <p style="font-size:12px;color:#999;margin-bottom:10px;">Placeholders disponíveis: {{nome}} {{email}} {{evento}} {{data_evento}} {{local}} {{valor}} {{link_estado}} {{link_pagamento}}</p>
+                            <p style="font-size:12px;color:#999;margin-bottom:10px;">Placeholders disponíveis: {{nome}} {{email}} {{evento}} {{data_evento}} {{local}} {{valor}} {{prova}} {{participantes}} {{link_estado}} {{link_pagamento}}</p>
                             <button class="btn btn-primary btn-small" onclick="guardarTemplate('pendente')">Guardar Modelo</button>
                             <p id="tpl-pendente-msg" style="margin-top:10px;font-size:13px;"></p>
                         </div>
@@ -424,7 +438,7 @@
                             <div class="box-header"><h3>Modelo: Inscrição Confirmada</h3></div>
                             <div class="form-group"><label>Assunto</label><input type="text" id="tpl-confirmada-assunto"></div>
                             <div class="form-group"><label>Corpo</label><textarea id="tpl-confirmada-corpo" rows="10"></textarea></div>
-                            <p style="font-size:12px;color:#999;margin-bottom:10px;">Placeholders disponíveis: {{nome}} {{email}} {{evento}} {{data_evento}} {{local}} {{valor}} {{dorsal}} {{link_estado}} {{link_pagamento}}</p>
+                            <p style="font-size:12px;color:#999;margin-bottom:10px;">Placeholders disponíveis: {{nome}} {{email}} {{evento}} {{data_evento}} {{local}} {{valor}} {{prova}} {{participantes}} {{dorsal}} {{link_estado}} {{link_pagamento}}</p>
                             <button class="btn btn-primary btn-small" onclick="guardarTemplate('confirmada')">Guardar Modelo</button>
                             <p id="tpl-confirmada-msg" style="margin-top:10px;font-size:13px;"></p>
                         </div>
@@ -433,7 +447,7 @@
                             <div class="box-header"><h3>Modelo: Inscrição Rejeitada</h3></div>
                             <div class="form-group"><label>Assunto</label><input type="text" id="tpl-rejeitada-assunto"></div>
                             <div class="form-group"><label>Corpo</label><textarea id="tpl-rejeitada-corpo" rows="10"></textarea></div>
-                            <p style="font-size:12px;color:#999;margin-bottom:10px;">Placeholders disponíveis: {{nome}} {{email}} {{evento}} {{data_evento}} {{local}} {{valor}} {{link_estado}} {{link_pagamento}}</p>
+                            <p style="font-size:12px;color:#999;margin-bottom:10px;">Placeholders disponíveis: {{nome}} {{email}} {{evento}} {{data_evento}} {{local}} {{valor}} {{prova}} {{participantes}} {{link_estado}} {{link_pagamento}}</p>
                             <button class="btn btn-primary btn-small" onclick="guardarTemplate('rejeitada')">Guardar Modelo</button>
                             <p id="tpl-rejeitada-msg" style="margin-top:10px;font-size:13px;"></p>
                         </div>
@@ -492,49 +506,81 @@
 
     <!-- MODAL EVENTO -->
     <div class="modal-overlay" id="modalEvento">
-        <div class="modal-box">
+        <div class="modal-box modal-largo">
             <h3 id="modalEventoTitulo">Novo Evento</h3>
             <input type="hidden" id="eventoId">
-            <div class="form-group"><label>Título</label><input type="text" id="ev-titulo"></div>
-            <div class="form-group"><label>Slug (URL)</label><input type="text" id="ev-slug" placeholder="ex: caminhada-primavera-2026"></div>
-            <div class="form-group"><label>Categoria</label><input type="text" id="ev-categoria" placeholder="ex: Natureza, Desporto"></div>
-            <div class="form-group"><label>Descrição curta</label><input type="text" id="ev-descricao-curta"></div>
-            <div class="form-group"><label>Descrição completa</label><textarea id="ev-descricao"></textarea></div>
-            <div class="form-group"><label>Recomendações</label><textarea id="ev-recomendacoes"></textarea></div>
-            <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
-                <div class="form-group"><label>Data do evento</label><input type="datetime-local" id="ev-data"></div>
-                <div class="form-group"><label>Fim inscrições</label><input type="datetime-local" id="ev-fim-inscricoes"></div>
+            <div class="modal-tabs">
+                <button type="button" class="modal-tab active" data-tab="geral" onclick="mostrarTabEvento('geral')">Geral</button>
+                <button type="button" class="modal-tab" data-tab="provas" onclick="mostrarTabEvento('provas')">Provas</button>
+                <button type="button" class="modal-tab" data-tab="documentos" onclick="mostrarTabEvento('documentos')">Documentos</button>
+            </div>
+
+            <div class="modal-tab-painel active" data-painel="geral">
+                <div class="form-group"><label>Título</label><input type="text" id="ev-titulo"></div>
+                <div class="form-group"><label>Slug (URL)</label><input type="text" id="ev-slug" placeholder="ex: caminhada-primavera-2026"></div>
+                <div class="form-group"><label>Categoria</label><input type="text" id="ev-categoria" placeholder="ex: Natureza, Desporto"></div>
+                <div class="form-group"><label>Descrição curta</label><input type="text" id="ev-descricao-curta"></div>
+                <div class="form-group"><label>Descrição completa</label><textarea id="ev-descricao"></textarea></div>
+                <div class="form-group"><label>Recomendações</label><textarea id="ev-recomendacoes"></textarea></div>
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+                    <div class="form-group"><label>Data do evento</label><input type="datetime-local" id="ev-data"></div>
+                    <div class="form-group"><label>Fim inscrições</label><input type="datetime-local" id="ev-fim-inscricoes"></div>
+                </div>
                 <div class="form-group"><label>Local</label><input type="text" id="ev-local"></div>
-                <div class="form-group"><label>Vagas</label><input type="number" id="ev-vagas" min="0"></div>
-                <div class="form-group"><label>Preço (€)</label><input type="number" id="ev-preco" min="0" step="0.01" value="0"></div>
-            </div>
-            <div class="form-group"><label>Estado</label>
-                <select id="ev-estado">
-                    <option value="rascunho">Rascunho</option>
-                    <option value="brevemente">Brevemente</option>
-                    <option value="aberto">Aberto</option>
-                    <option value="fechado">Fechado</option>
-                    <option value="concluido">Concluído</option>
-                    <option value="cancelado">Cancelado</option>
-                </select>
-            </div>
-            <div class="form-group"><label>Imagem (upload)</label>
-                <input type="file" id="ev-imagem-file" accept="image/*">
-                <input type="hidden" id="ev-imagem">
-                <div id="ev-imagem-preview" style="margin-top:8px; display:none;"><img id="ev-imagem-preview-img" src="data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20width%3D%271%27%20height%3D%271%27%3E%3C/svg%3E" alt="Preview" style="max-width:100%; max-height:240px; object-fit: contain; border-radius:6px; border:1px solid #eee;"></div>
-            </div>
-            <div class="form-group"><label>Regulamento (PDF)</label>
-                <input type="file" id="ev-regulamento-file" accept="application/pdf">
-                <input type="hidden" id="ev-regulamento">
-                <div id="ev-regulamento-atual" style="margin-top:8px; display:none; font-size:13px;">
-                    <a id="ev-regulamento-link" href="#" target="_blank" rel="noopener" style="color: var(--accent-color);">📄 Ver regulamento atual</a>
+                <div class="form-group"><label>Estado</label>
+                    <select id="ev-estado">
+                        <option value="rascunho">Rascunho</option>
+                        <option value="brevemente">Brevemente</option>
+                        <option value="aberto">Aberto</option>
+                        <option value="fechado">Fechado</option>
+                        <option value="concluido">Concluído</option>
+                        <option value="cancelado">Cancelado</option>
+                    </select>
+                </div>
+                <div class="form-group"><label>Imagem (upload)</label>
+                    <input type="file" id="ev-imagem-file" accept="image/*">
+                    <input type="hidden" id="ev-imagem">
+                    <div id="ev-imagem-preview" style="margin-top:8px; display:none;"><img id="ev-imagem-preview-img" src="data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20width%3D%271%27%20height%3D%271%27%3E%3C/svg%3E" alt="Preview" style="max-width:100%; max-height:240px; object-fit: contain; border-radius:6px; border:1px solid #eee;"></div>
+                </div>
+                <div class="form-group"><label>Regulamento (PDF)</label>
+                    <input type="file" id="ev-regulamento-file" accept="application/pdf">
+                    <input type="hidden" id="ev-regulamento">
+                    <div id="ev-regulamento-atual" style="margin-top:8px; display:none; font-size:13px;">
+                        <a id="ev-regulamento-link" href="#" target="_blank" rel="noopener" style="color: var(--accent-color);">📄 Ver regulamento atual</a>
+                    </div>
                 </div>
             </div>
-            <div class="form-group">
-                <label>Informação Adicional <small style="font-weight:400;color:#888;">(percurso, fotos, resultados, documentos... distinto da descrição)</small></label>
-                <div id="ev-links-lista" style="display:flex; flex-direction:column; gap:8px; margin-bottom:8px;"></div>
-                <button type="button" class="btn btn-small" style="background:#f0f0f0;color:#444;" onclick="adicionarLinhaLinkEvento()">+ Adicionar Link</button>
+
+            <div class="modal-tab-painel" data-painel="provas">
+                <div class="form-group">
+                    <label>Texto da contribuição <small style="font-weight:400;color:#888;">(aparece a seguir ao valor, ex: "caminhadas", "pedaladas", "cumes solidários")</small></label>
+                    <input type="text" id="ev-contribuicao-unidade" placeholder="caminhadas">
+                    <small id="ev-contribuicao-exemplo" style="display:block;margin-top:4px;color:#888;font-size:12px;"></small>
+                </div>
+                <div class="form-group">
+                    <label style="display:flex;align-items:center;gap:8px;font-weight:400;">
+                        <input type="checkbox" id="ev-multiplas-provas" style="width:auto;">
+                        Permitir que um participante se inscreva em mais do que uma prova
+                    </label>
+                </div>
+                <label style="display:block;font-size:13px;font-weight:700;margin-bottom:5px;">Provas <small style="font-weight:400;color:#888;">(pelo menos uma; numa caminhada basta "Caminhada")</small></label>
+                <div id="ev-provas-lista" style="display:flex; flex-direction:column; gap:10px; margin-bottom:8px;"></div>
+                <button type="button" class="btn btn-small" style="background:#f0f0f0;color:#444;" onclick="adicionarLinhaProva()">+ Adicionar prova</button>
             </div>
+
+            <div class="modal-tab-painel" data-painel="documentos">
+                <div class="form-group">
+                    <label>Informação <small style="font-weight:400;color:#888;">(antes do evento: mapa, percurso, horários...)</small></label>
+                    <div id="ev-docs-informacao" class="ev-docs-lista"></div>
+                    <button type="button" class="btn btn-small" style="background:#f0f0f0;color:#444;" onclick="adicionarLinhaDocumento('informacao')">+ Adicionar documento</button>
+                </div>
+                <div class="form-group" style="margin-top:20px;">
+                    <label>Resultados <small style="font-weight:400;color:#888;">(depois do evento: participantes, classificações, fotos...)</small></label>
+                    <div id="ev-docs-resultados" class="ev-docs-lista"></div>
+                    <button type="button" class="btn btn-small" style="background:#f0f0f0;color:#444;" onclick="adicionarLinhaDocumento('resultados')">+ Adicionar documento</button>
+                </div>
+            </div>
+
             <div class="modal-actions">
                 <button class="btn-secondary" onclick="fecharModal('modalEvento')">Cancelar</button>
                 <button class="btn btn-primary" onclick="guardarEvento()">Guardar</button>
@@ -608,7 +654,7 @@
         </div>
     </footer>
 
-    <script src="js/main.js?v=20260825"></script>
+    <script src="js/main.js?v=20261021"></script>
     <script type="module">
         import {
             requireAdmin, supabase,
@@ -617,8 +663,9 @@
             subscreverInscricoesAdmin,
             subscreverUtilizadoresAdmin,
             subscreverSuporteAdmin,
-            getAdminQuotas, atualizarQuota, validarPagamento,
-            formatarData, formatarMoeda, calcularValidadeQuota, DIAS_VALIDADE_QUOTA,
+            getAdminQuotas, atualizarQuota, validarPagamento, rejeitarPagamento,
+            getProvasEvento, getDocumentosEvento,
+            formatarData, formatarMoeda, formatarContribuicao, calcularValidadeQuota, DIAS_VALIDADE_QUOTA,
             localParaISO, isoParaLocal,
             getConfiguracao, definirConfiguracao
         } from './js/supabase.js'
@@ -977,10 +1024,15 @@
 
         // ── EVENTOS ──────────────────────────────────────────────────────
         let todosEventos = []
+        let todasProvas = []
 
         async function carregarEventos() {
-            const { data } = await supabase.from('eventos').select('*').order('data_evento', { ascending: false })
+            const [{ data }, { data: provas }] = await Promise.all([
+                supabase.from('eventos').select('*').order('data_evento', { ascending: false }),
+                supabase.from('evento_provas').select('id, evento_id, nome').order('ordem', { ascending: true })
+            ])
             todosEventos = data || []
+            todasProvas = provas || []
 
             const sel = document.getElementById('filtroEvento')
             sel.innerHTML = '<option value="">Todos os eventos</option>'
@@ -1011,7 +1063,7 @@
                     <td><strong>${escapeHtml(ev.titulo)}</strong><br><small style="color:#999;">${escapeHtml(ev.slug)}</small></td>
                     <td>${formatarData(ev.data_evento)}</td>
                     <td><span class="badge ${tagClass[ev.estado] || ''}" style="padding:3px 10px;border-radius:99px;font-size:12px;">${ev.estado}</span></td>
-                    <td>${ev.vagas ?? 'Ilimitado'}</td>
+                    <td style="font-size:13px;">${todasProvas.filter(p => p.evento_id === ev.id).map(p => escapeHtml(p.nome)).join('<br>') || '-'}</td>
                     <td></td>`
                 const td = tr.querySelector('td:last-child')
                 td.appendChild(btnAprovar('Editar', () => abrirModalEvento(ev)))
@@ -1044,36 +1096,133 @@
             await carregarInscricoes()
         }
 
-        window.adicionarLinhaLinkEvento = function(titulo, url) {
-            const lista = document.getElementById('ev-links-lista')
-            const row = document.createElement('div')
-            row.className = 'link-adicional-row'
-            row.style.cssText = 'display:flex;gap:8px;'
-            const inputTitulo = document.createElement('input')
-            inputTitulo.type = 'text'
-            inputTitulo.className = 'link-titulo'
-            inputTitulo.placeholder = 'Título (ex: Mapa do Percurso)'
-            inputTitulo.value = titulo || ''
-            inputTitulo.style.cssText = 'flex:1;padding:8px;border:1px solid #ddd;border-radius:6px;font-size:13px;'
-            const inputUrl = document.createElement('input')
-            inputUrl.type = 'url'
-            inputUrl.className = 'link-url'
-            inputUrl.placeholder = 'https://...'
-            inputUrl.value = url || ''
-            inputUrl.style.cssText = 'flex:2;padding:8px;border:1px solid #ddd;border-radius:6px;font-size:13px;'
-            const btnRemover = document.createElement('button')
-            btnRemover.type = 'button'
-            btnRemover.className = 'btn-secondary'
-            btnRemover.style.cssText = 'padding:6px 10px;'
-            btnRemover.textContent = '✕'
-            btnRemover.addEventListener('click', () => row.remove())
-            row.appendChild(inputTitulo)
-            row.appendChild(inputUrl)
-            row.appendChild(btnRemover)
-            lista.appendChild(row)
+        // ── Modal de evento: separadores, provas e documentos ────────────
+        window.mostrarTabEvento = function(tab) {
+            document.querySelectorAll('#modalEvento .modal-tab').forEach(b => b.classList.toggle('active', b.dataset.tab === tab))
+            document.querySelectorAll('#modalEvento .modal-tab-painel').forEach(p => p.classList.toggle('active', p.dataset.painel === tab))
         }
 
-        window.abrirModalEvento = function(ev) {
+        let provasOriginais = []
+        let contadorProvasNovas = 0
+
+        // Cada linha de prova tem uma chave (o id da prova, ou "nova-N" enquanto
+        // não está guardada) para os documentos a poderem referenciar.
+        window.adicionarLinhaProva = function(prova) {
+            const lista = document.getElementById('ev-provas-lista')
+            const row = document.createElement('div')
+            row.className = 'prova-row'
+            row.dataset.id = prova?.id || ''
+            row.dataset.chave = prova?.id || `nova-${++contadorProvasNovas}`
+            row.innerHTML = `
+                <div class="prova-row-topo">
+                    <input type="text" class="prova-nome" placeholder="Nome (ex: Caminhada, Trail Longo, BTT 40km)" style="flex:3;">
+                    <input type="number" class="prova-valor" min="0" step="0.01" placeholder="Valor" title="Valor da contribuição por participante" style="flex:1;min-width:80px;">
+                    <button type="button" class="btn-secondary prova-remover" title="Remover prova">✕</button>
+                </div>
+                <textarea class="prova-descricao" placeholder="Descrição (opcional): distância, dificuldade, hora de partida..."></textarea>`
+            row.querySelector('.prova-nome').value = prova?.nome || ''
+            row.querySelector('.prova-valor').value = prova?.valor ?? 0
+            row.querySelector('.prova-descricao').value = prova?.descricao || ''
+            row.querySelector('.prova-nome').addEventListener('input', atualizarOpcoesProvaDocumentos)
+            row.querySelector('.prova-valor').addEventListener('input', atualizarExemploContribuicao)
+            row.querySelector('.prova-remover').addEventListener('click', async () => {
+                if (document.querySelectorAll('#ev-provas-lista .prova-row').length <= 1) {
+                    alert('O evento tem de ter pelo menos uma prova.')
+                    return
+                }
+                if (row.dataset.id) {
+                    const { count, error } = await supabase.from('inscricoes_evento')
+                        .select('id', { count: 'exact', head: true })
+                        .eq('prova_id', row.dataset.id)
+                    if (error) { alert('Erro ao verificar inscrições da prova: ' + error.message); return }
+                    if (count > 0) {
+                        alert(`Esta prova já tem ${count} inscrição(ões) e não pode ser removida. Pode mudar-lhe o nome ou eliminar primeiro essas inscrições.`)
+                        return
+                    }
+                }
+                row.remove()
+                atualizarOpcoesProvaDocumentos()
+                atualizarExemploContribuicao()
+            })
+            lista.appendChild(row)
+            atualizarOpcoesProvaDocumentos()
+        }
+
+        // Mantém o seletor "Prova" de cada documento igual à lista de provas atual.
+        function atualizarOpcoesProvaDocumentos() {
+            const provas = Array.from(document.querySelectorAll('#ev-provas-lista .prova-row')).map(row => ({
+                chave: row.dataset.chave,
+                nome: row.querySelector('.prova-nome').value.trim()
+            }))
+            document.querySelectorAll('#modalEvento .doc-prova').forEach(sel => {
+                const atual = sel.value
+                sel.innerHTML = '<option value="">Geral</option>' + provas
+                    .map(p => `<option value="${escapeHtml(p.chave)}">${escapeHtml(p.nome || 'Prova sem nome')}</option>`).join('')
+                sel.value = provas.some(p => p.chave === atual) ? atual : ''
+            })
+        }
+
+        function atualizarExemploContribuicao() {
+            const unidade = document.getElementById('ev-contribuicao-unidade').value
+            const primeiroValor = document.querySelector('#ev-provas-lista .prova-valor')?.value || 0
+            document.getElementById('ev-contribuicao-exemplo').textContent = 'Vai aparecer assim: ' + formatarContribuicao(primeiroValor, unidade)
+        }
+        document.getElementById('ev-contribuicao-unidade').addEventListener('input', atualizarExemploContribuicao)
+
+        window.adicionarLinhaDocumento = function(seccao, doc) {
+            const lista = document.getElementById(`ev-docs-${seccao}`)
+            const row = document.createElement('div')
+            row.className = 'doc-row'
+            row.dataset.seccao = seccao
+            row.dataset.ficheiroAtual = doc?.tipo === 'ficheiro' ? (doc.url || '') : ''
+            row.innerHTML = `
+                <div class="doc-row-topo">
+                    <input type="text" class="doc-titulo" placeholder="Título (ex: Classificação, Mapa do percurso)" style="flex:2;">
+                    <select class="doc-prova" style="flex:1;" title="Prova a que o documento pertence"></select>
+                    <button type="button" class="btn-secondary doc-remover" title="Remover documento">✕</button>
+                </div>
+                <div class="doc-row-fonte">
+                    <select class="doc-tipo">
+                        <option value="ficheiro">Ficheiro</option>
+                        <option value="link">Link</option>
+                    </select>
+                    <input type="file" class="doc-ficheiro" style="flex:1;">
+                    <input type="url" class="doc-url" placeholder="https://..." style="flex:1;">
+                </div>
+                <div class="doc-atual"></div>`
+            const tipoSel = row.querySelector('.doc-tipo')
+            const atual = row.querySelector('.doc-atual')
+            tipoSel.value = doc?.tipo || 'ficheiro'
+            row.querySelector('.doc-titulo').value = doc?.titulo || ''
+            if (doc?.tipo === 'link') row.querySelector('.doc-url').value = doc.url || ''
+            if (row.dataset.ficheiroAtual) {
+                atual.innerHTML = `Ficheiro atual: <a href="${escapeHtml(row.dataset.ficheiroAtual)}" target="_blank" rel="noopener" style="color:var(--accent-color);">abrir</a> — escolha outro ficheiro para o substituir.`
+            }
+            const mostrarFonte = () => {
+                const ficheiro = tipoSel.value === 'ficheiro'
+                row.querySelector('.doc-ficheiro').style.display = ficheiro ? '' : 'none'
+                row.querySelector('.doc-url').style.display = ficheiro ? 'none' : ''
+                atual.style.display = ficheiro && row.dataset.ficheiroAtual ? '' : 'none'
+            }
+            tipoSel.addEventListener('change', mostrarFonte)
+            row.querySelector('.doc-remover').addEventListener('click', () => row.remove())
+            lista.appendChild(row)
+            atualizarOpcoesProvaDocumentos()
+            row.querySelector('.doc-prova').value = doc?.prova_id || ''
+            mostrarFonte()
+        }
+
+        // Envia um ficheiro para o bucket público "eventos" e devolve o URL público.
+        async function enviarFicheiroEvento(file, pasta) {
+            const fileName = `${Date.now()}_${file.name.replace(/[^a-zA-Z0-9._-]/g,'_')}`
+            const path = `${pasta}/${fileName}`
+            const { error } = await supabase.storage.from('eventos').upload(path, file, { cacheControl: '3600', upsert: true, contentType: file.type || undefined })
+            if (error) throw new Error(`Erro ao enviar "${file.name}": ${error.message}`)
+            const { data } = supabase.storage.from('eventos').getPublicUrl(path)
+            return data?.publicUrl
+        }
+
+        window.abrirModalEvento = async function(ev) {
             document.getElementById('modalEventoTitulo').textContent = ev ? 'Editar Evento' : 'Novo Evento'
             document.getElementById('eventoId').value      = ev?.id || ''
             document.getElementById('ev-titulo').value     = ev?.titulo || ''
@@ -1085,9 +1234,9 @@
             document.getElementById('ev-data').value       = ev?.data_evento ? isoParaLocal(ev.data_evento) : ''
             document.getElementById('ev-fim-inscricoes').value = ev?.data_fim_inscricoes ? isoParaLocal(ev.data_fim_inscricoes) : ''
             document.getElementById('ev-local').value      = ev?.local || ''
-            document.getElementById('ev-vagas').value      = ev?.vagas || ''
-            document.getElementById('ev-preco').value = ev?.preco ?? 0
             document.getElementById('ev-estado').value     = ev?.estado || 'aberto'
+            document.getElementById('ev-contribuicao-unidade').value = ev?.contribuicao_unidade || ''
+            document.getElementById('ev-multiplas-provas').checked = !!ev?.permite_multiplas_provas
             // set hidden imagem url field and preview
             document.getElementById('ev-imagem').value     = ev?.imagem_url || ''
             const preview = document.getElementById('ev-imagem-preview')
@@ -1112,15 +1261,68 @@
             } else {
                 if (regulamentoAtual) regulamentoAtual.style.display = 'none'
             }
-            const listaLinks = document.getElementById('ev-links-lista')
-            listaLinks.innerHTML = ''
-            const linksExistentes = Array.isArray(ev?.links_adicionais) ? ev.links_adicionais : []
-            linksExistentes.forEach(l => adicionarLinhaLinkEvento(l.titulo, l.url))
+
+            let provas = []
+            let documentos = []
+            if (ev?.id) {
+                const [rProvas, rDocs] = await Promise.all([getProvasEvento(ev.id), getDocumentosEvento(ev.id)])
+                if (rProvas.error || rDocs.error) {
+                    alert('Erro ao carregar provas e documentos do evento: ' + (rProvas.error || rDocs.error).message)
+                    return
+                }
+                provas = rProvas.data || []
+                documentos = rDocs.data || []
+            }
+            provasOriginais = provas.map(p => p.id)
+            document.getElementById('ev-provas-lista').innerHTML = ''
+            document.getElementById('ev-docs-informacao').innerHTML = ''
+            document.getElementById('ev-docs-resultados').innerHTML = ''
+            if (provas.length) provas.forEach(p => adicionarLinhaProva(p))
+            else adicionarLinhaProva({ nome: '', valor: 0 })
+            documentos.forEach(d => adicionarLinhaDocumento(d.seccao, d))
+            atualizarExemploContribuicao()
+
+            mostrarTabEvento('geral')
             document.getElementById('modalEvento').classList.add('open')
         }
 
         window.guardarEvento = async function() {
             const id = document.getElementById('eventoId').value
+
+            const provasForm = Array.from(document.querySelectorAll('#ev-provas-lista .prova-row')).map((row, ordem) => ({
+                row,
+                id: row.dataset.id || null,
+                chave: row.dataset.chave,
+                nome: row.querySelector('.prova-nome').value.trim(),
+                descricao: row.querySelector('.prova-descricao').value.trim() || null,
+                valor: parseFloat(row.querySelector('.prova-valor').value) || 0,
+                ordem
+            }))
+            if (!provasForm.length || provasForm.some(p => !p.nome)) {
+                mostrarTabEvento('provas')
+                alert('Indique o nome de todas as provas. O evento precisa de pelo menos uma (numa caminhada basta "Caminhada").')
+                return
+            }
+
+            const documentosForm = Array.from(document.querySelectorAll('#modalEvento .doc-row')).map((row, ordem) => ({
+                row,
+                seccao: row.dataset.seccao,
+                titulo: row.querySelector('.doc-titulo').value.trim(),
+                chaveProva: row.querySelector('.doc-prova').value || null,
+                tipo: row.querySelector('.doc-tipo').value,
+                url: row.querySelector('.doc-url').value.trim(),
+                ficheiro: row.querySelector('.doc-ficheiro').files?.[0] || null,
+                ordem
+            }))
+            for (const d of documentosForm) {
+                const semFonte = d.tipo === 'link' ? !d.url : !(d.ficheiro || d.row.dataset.ficheiroAtual)
+                if (!d.titulo || semFonte) {
+                    mostrarTabEvento('documentos')
+                    alert('Cada documento precisa de um título e de um ficheiro ou link. Preencha ou remova os documentos incompletos.')
+                    return
+                }
+            }
+
             // prepare payload excluding imagem_url initially
             const payload = {
                 titulo:           document.getElementById('ev-titulo').value.trim(),
@@ -1132,15 +1334,16 @@
                 data_evento:      localParaISO(document.getElementById('ev-data').value),
                 data_fim_inscricoes: localParaISO(document.getElementById('ev-fim-inscricoes').value),
                 local:            document.getElementById('ev-local').value.trim() || null,
-                vagas:            parseInt(document.getElementById('ev-vagas').value) || null,
-                preco:            parseFloat(document.getElementById('ev-preco').value) || 0,
                 estado:           document.getElementById('ev-estado').value,
-                links_adicionais: Array.from(document.querySelectorAll('#ev-links-lista .link-adicional-row'))
-                    .map(row => ({
-                        titulo: row.querySelector('.link-titulo').value.trim(),
-                        url:    row.querySelector('.link-url').value.trim()
-                    }))
-                    .filter(l => l.url)
+                contribuicao_unidade: document.getElementById('ev-contribuicao-unidade').value.trim() || null,
+                permite_multiplas_provas: document.getElementById('ev-multiplas-provas').checked,
+                // Mantido por compatibilidade (emails antigos); o valor real está em cada prova.
+                preco:            Math.min(...provasForm.map(p => p.valor))
+            }
+            if (!payload.titulo || !payload.slug || !payload.data_evento) {
+                mostrarTabEvento('geral')
+                alert('Preencha pelo menos o título, o slug e a data do evento.')
+                return
             }
 
             // handle image upload if a file was selected
@@ -1215,11 +1418,84 @@
                 if (existingRegulamentoUrl) payload.regulamento_url = existingRegulamentoUrl
             }
 
-            if (id) {
-                await supabase.from('eventos').update(payload).eq('id', id)
-            } else {
-                await supabase.from('eventos').insert(payload)
+            const btnGuardar = document.querySelector('#modalEvento .modal-actions .btn-primary')
+            btnGuardar.disabled = true
+            btnGuardar.textContent = 'A guardar...'
+            try {
+                // 1. Evento
+                let eventoId = id
+                if (id) {
+                    const { error } = await supabase.from('eventos').update(payload).eq('id', id)
+                    if (error) throw error
+                } else {
+                    const { data, error } = await supabase.from('eventos').insert(payload).select('id').single()
+                    if (error) throw error
+                    eventoId = data.id
+                    // Se um passo seguinte falhar, guardar outra vez atualiza em vez de duplicar.
+                    document.getElementById('eventoId').value = eventoId
+                }
+
+                // 2. Provas: remover as que saíram, atualizar as existentes, criar as novas
+                const idsMantidos = new Set(provasForm.filter(p => p.id).map(p => p.id))
+                for (const provaId of provasOriginais.filter(pid => !idsMantidos.has(pid))) {
+                    const { error } = await supabase.from('evento_provas').delete().eq('id', provaId)
+                    if (error) {
+                        if (error.code === '23503') throw new Error('Uma das provas removidas já tem inscrições e não pode ser apagada.')
+                        throw error
+                    }
+                }
+                provasOriginais = [...idsMantidos]
+
+                const idPorChave = {}
+                for (const p of provasForm) {
+                    const dados = { evento_id: eventoId, nome: p.nome, descricao: p.descricao, valor: p.valor, ordem: p.ordem }
+                    if (p.id) {
+                        const { error } = await supabase.from('evento_provas').update(dados).eq('id', p.id)
+                        if (error) throw error
+                        idPorChave[p.chave] = p.id
+                    } else {
+                        const { data, error } = await supabase.from('evento_provas').insert(dados).select('id').single()
+                        if (error) throw error
+                        idPorChave[p.chave] = data.id
+                        p.row.dataset.id = data.id
+                        provasOriginais.push(data.id)
+                    }
+                }
+
+                // 3. Documentos: enviar ficheiros novos e substituir a lista do evento
+                const documentos = []
+                for (const d of documentosForm) {
+                    let url = d.tipo === 'link' ? d.url : d.row.dataset.ficheiroAtual
+                    if (d.tipo === 'ficheiro' && d.ficheiro) {
+                        url = await enviarFicheiroEvento(d.ficheiro, `documentos/${eventoId}`)
+                        d.row.dataset.ficheiroAtual = url
+                        d.row.querySelector('.doc-ficheiro').value = ''
+                    }
+                    documentos.push({
+                        evento_id: eventoId,
+                        prova_id: d.chaveProva ? (idPorChave[d.chaveProva] || null) : null,
+                        seccao: d.seccao,
+                        titulo: d.titulo,
+                        url,
+                        tipo: d.tipo,
+                        ordem: d.ordem
+                    })
+                }
+                const { error: errApagarDocs } = await supabase.from('evento_documentos').delete().eq('evento_id', eventoId)
+                if (errApagarDocs) throw errApagarDocs
+                if (documentos.length) {
+                    const { error } = await supabase.from('evento_documentos').insert(documentos)
+                    if (error) throw error
+                }
+            } catch (err) {
+                console.error('Erro ao guardar evento:', err)
+                alert('Erro ao guardar o evento: ' + (err.message || JSON.stringify(err)))
+                return
+            } finally {
+                btnGuardar.disabled = false
+                btnGuardar.textContent = 'Guardar'
             }
+
             fecharModal('modalEvento')
             carregarEventos()
         }
@@ -1254,12 +1530,17 @@
         }
 
         window.carregarInscricoes = async function() {
-            const { data, error } = await supabase.from('inscricoes_evento').select('*, eventos(titulo)').order('data_inscricao', { ascending: false })
+            const { data, error } = await supabase.from('inscricoes_evento').select('*, eventos(titulo), evento_provas(nome)').order('data_inscricao', { ascending: false })
             if (error) {
                 alert('Erro ao carregar inscrições: ' + error.message)
                 return
             }
             window._inscricoes = data || []
+            // Nº de pessoas inscritas com o mesmo pagamento (inscrição de grupo)
+            window._tamanhoGrupo = {}
+            window._inscricoes.forEach(i => {
+                if (i.pagamento_id) window._tamanhoGrupo[i.pagamento_id] = (window._tamanhoGrupo[i.pagamento_id] || 0) + 1
+            })
             filtrarInscricoes()
         }
 
@@ -1268,7 +1549,7 @@
             const eventoFiltro = document.getElementById('filtroEvento').value
             const pagFiltro = document.getElementById('filtroPagamento').value
             const filtrado = (window._inscricoes || []).filter(i => {
-                const alvo = `${i.nome || ''} ${i.email || ''} ${i.nif || ''}`.toLowerCase()
+                const alvo = `${i.nome || ''} ${i.email || ''} ${i.nif || ''} ${i.evento_provas?.nome || ''}`.toLowerCase()
                 return alvo.includes(termo)
                     && (!eventoFiltro || i.evento_id === eventoFiltro)
                     && (!pagFiltro || i.pagamento_estado === pagFiltro)
@@ -1278,7 +1559,7 @@
 
         function renderInscricoes(data) {
             const tbody = document.getElementById('tbl-inscricoes')
-            if (!data?.length) { tbody.innerHTML = '<tr><td colspan="9" style="text-align:center;color:#999;">Sem inscrições.</td></tr>'; return }
+            if (!data?.length) { tbody.innerHTML = '<tr><td colspan="12" style="text-align:center;color:#999;">Sem inscrições.</td></tr>'; return }
 
             tbody.innerHTML = ''
             data.forEach(i => {
@@ -1286,9 +1567,14 @@
                 const estadoInscricao = (i.estado === 'confirmada' && i.pagamento_estado === 'validado')
                     ? '<span class="badge badge-pago">Confirmada</span>'
                     : '<span class="badge badge-pendente">Pendente</span>'
+                const tamanhoGrupo = (i.pagamento_id && window._tamanhoGrupo?.[i.pagamento_id]) || 1
+                const grupo = tamanhoGrupo > 1
+                    ? `<br><small style="color:#5b21b6;" title="Inscrição de grupo com um único pagamento">👪 Grupo de ${tamanhoGrupo}</small>`
+                    : ''
                 tr.innerHTML = `
-                    <td>${i.eventos?.titulo || '-'}</td>
-                    <td>${escapeHtml(i.nome)}</td>
+                    <td>${escapeHtml(i.eventos?.titulo) || '-'}</td>
+                    <td>${escapeHtml(i.evento_provas?.nome) || '-'}</td>
+                    <td>${escapeHtml(i.nome)}${grupo}</td>
                     <td style="font-size:12px;">${escapeHtml(i.email)}</td>
                     <td>${escapeHtml(i.nif) || '-'}</td>
                     <td>${escapeHtml(i.localidade) || '-'}</td>
@@ -1329,7 +1615,7 @@
                         const dorsal = document.getElementById(`d_${i.id}`).value.trim() || null
                         const { error: errConfirm } = await atualizarInscricaoEvento(i.id, { pagamento_estado:'validado', estado:'confirmada', dorsal, data_confirmacao: new Date().toISOString() })
                         if (errConfirm) { alert('Erro ao confirmar: ' + errConfirm.message); return }
-                        supabase.functions.invoke('enviar-email', { body: { categoria: 'inscricao', tipo: 'confirmada', inscricao_id: i.id } }).catch(() => {})
+                        // O email de confirmação é enviado pelo trigger inscricoes_evento_email_confirmada.
                         carregarInscricoes()
                     }))
                     td.appendChild(btnAcao('Reenviar Email', 'normal', async (ev) => {
@@ -1372,8 +1658,8 @@
         window.exportarInscricoes = function() {
             const data = window._inscricoes || []
             if (!data.length) return alert('Sem dados para exportar.')
-            const header = 'Evento,Nome,Email,NIF,País,Localidade,Equipa,Seguro,Estado Pagamento,Dorsal,Tamanho T-shirt,Data Inscrição'
-            const rows = data.map(i => `"${csvSeguro(i.eventos?.titulo || '')}","${csvSeguro(i.nome)}","${csvSeguro(i.email)}","${csvSeguro(i.nif || '')}","${csvSeguro(i.pais || '')}","${csvSeguro(i.localidade || '')}","${csvSeguro(i.equipa || '')}","${i.seguro ? 'Sim' : 'Não'}","${csvSeguro(i.pagamento_estado)}","${csvSeguro(i.dorsal || '')}","${csvSeguro(i.tamanho_tshirt || '')}","${csvSeguro(i.data_inscricao)}"`)
+            const header = 'Evento,Prova,Nome,Email,NIF,País,Localidade,Equipa,Seguro,Estado Pagamento,Dorsal,Tamanho T-shirt,Data Inscrição,Grupo (pagamento)'
+            const rows = data.map(i => `"${csvSeguro(i.eventos?.titulo || '')}","${csvSeguro(i.evento_provas?.nome || '')}","${csvSeguro(i.nome)}","${csvSeguro(i.email)}","${csvSeguro(i.nif || '')}","${csvSeguro(i.pais || '')}","${csvSeguro(i.localidade || '')}","${csvSeguro(i.equipa || '')}","${i.seguro ? 'Sim' : 'Não'}","${csvSeguro(i.pagamento_estado)}","${csvSeguro(i.dorsal || '')}","${csvSeguro(i.tamanho_tshirt || '')}","${csvSeguro(i.data_inscricao)}","${csvSeguro(i.pagamento_id || '')}"`)
             const csv = '\ufeff' + [header, ...rows].join('\n')
             const a = document.createElement('a')
             a.href = 'data:text/csv;charset=utf-8,' + encodeURIComponent(csv)
@@ -1927,12 +2213,16 @@
 
         // ── PAGAMENTOS ───────────────────────────────────────────────────
         let todosPagamentos = []
+        let participantesPorPagamento = {}
 
         async function carregarPagamentos() {
-            const { data, error } = await supabase
-                .from('pagamentos')
-                .select('*, utilizadores!utilizador_id(nome, apelido, email), inscricoes_evento(nome, email)')
-                .order('created_at', { ascending: false })
+            const [{ data, error }, { data: grupos }] = await Promise.all([
+                supabase
+                    .from('pagamentos')
+                    .select('*, utilizadores!utilizador_id(nome, apelido, email), inscricoes_evento(nome, email)')
+                    .order('created_at', { ascending: false }),
+                supabase.from('inscricoes_evento').select('pagamento_id, nome').not('pagamento_id', 'is', null)
+            ])
             const tbody = document.getElementById('tbl-pagamentos')
             if (error) {
                 console.error('Erro ao carregar pagamentos:', error)
@@ -1940,6 +2230,10 @@
                 return
             }
             todosPagamentos = data || []
+            participantesPorPagamento = {}
+            ;(grupos || []).forEach(g => {
+                (participantesPorPagamento[g.pagamento_id] ||= []).push(g.nome)
+            })
             filtrarPagamentos()
         }
 
@@ -1965,10 +2259,14 @@
                 const inscricao = p.inscricoes_evento
                 const nome = u ? `${escapeHtml(u.nome)} ${escapeHtml(u.apelido)}`.trim() : (escapeHtml(inscricao?.nome) || '-')
                 const email = escapeHtml(u?.email || inscricao?.email) || ''
+                const participantes = participantesPorPagamento[p.id] || []
+                const grupo = participantes.length > 1
+                    ? `<br><small style="color:#5b21b6;" title="${escapeHtml(participantes.join(', '))}">👪 Grupo de ${participantes.length}</small>`
+                    : ''
                 const tr = document.createElement('tr')
                 tr.innerHTML = `
                     <td><span class="badge" style="background:#f0f0f0;color:#444;">${p.tipo}</span>${p.pedido_fatura ? ' <span class="badge" style="background:#ede9fe;color:#5b21b6;" title="Fatura pedida">🧾 Fatura</span>' : ''}</td>
-                    <td>${nome}<br><small style="color:#999;">${email}</small></td>
+                    <td>${nome}<br><small style="color:#999;">${email}</small>${grupo}</td>
                     <td>${formatarMoeda(p.valor)}</td>
                     <td>${p.metodo === 'mbway' ? `MB WAY${p.telefone_mbway ? '<br><small style="color:#999;">' + escapeHtml(p.telefone_mbway) + '</small>' : ''}` : (p.metodo || '-')}</td>
                     <td>${pagBadge[p.estado] || p.estado}</td>
@@ -1990,15 +2288,20 @@
                 }
                 if (p.estado === 'pendente' || p.estado === 'em_validacao') {
                     td.appendChild(btnAprovar('Validar', async () => {
+                        // Valida o pagamento e confirma todas as inscrições do grupo; os emails
+                        // de confirmação são enviados pelo trigger inscricoes_evento_email_confirmada.
                         const { error: errValidar } = await validarPagamento(p.id)
                         if (errValidar) { alert('Erro ao validar: ' + errValidar.message); return }
-                        if (p.tipo === 'evento' && p.inscricao_evento_id) {
-                            supabase.functions.invoke('enviar-email', { body: { categoria: 'inscricao', tipo: 'confirmada', inscricao_id: p.inscricao_evento_id } }).catch(() => {})
-                        }
                         carregarPagamentos()
                     }))
                     td.appendChild(btnAcao('Rejeitar', 'danger', async () => {
-                        await supabase.from('pagamentos').update({ estado:'rejeitado' }).eq('id', p.id)
+                        if (p.tipo === 'evento') {
+                            // Rejeita também as inscrições ligadas a este pagamento (todo o grupo).
+                            const { error: errRejeitar } = await rejeitarPagamento(p.id)
+                            if (errRejeitar) { alert('Erro ao rejeitar: ' + errRejeitar.message); return }
+                        } else {
+                            await supabase.from('pagamentos').update({ estado:'rejeitado' }).eq('id', p.id)
+                        }
                         carregarPagamentos()
                     }))
                 }

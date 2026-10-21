@@ -684,7 +684,7 @@ async function carregarEventosPerfil(api, utilizadorId) {
     return `
       <div style="display:flex; justify-content:space-between; align-items:center; gap:12px; padding:16px; border:1px solid var(--border-color); border-radius:8px; flex-wrap:wrap;">
         <div style="min-width:0;">
-          <strong>${evento?.titulo || 'Evento'}</strong><br>
+          <strong>${escapeHtml(evento?.titulo) || 'Evento'}</strong>${inscricao.evento_provas?.nome ? ` <span style="color:#777;">&middot; ${escapeHtml(inscricao.evento_provas.nome)}</span>` : ''}<br>
           <span style="color:#999; font-size:13px;">${evento?.data_evento ? api.formatarData(evento.data_evento) : '-'}</span>
         </div>
         <div>${badge}</div>
@@ -693,68 +693,175 @@ async function carregarEventosPerfil(api, utilizadorId) {
   }).join('')
 }
 
+const MAX_PARTICIPANTES = 5
+
 async function configurarInscricaoEvento(api) {
   if (!isPagina('inscricao-evento.html') || !api) return
 
-  let form = document.querySelector('form[action="pagamento-evento.html"]')
-  if (!form) form = document.getElementById('inscricaoForm')
-  if (!form) return
+  const form = document.getElementById('inscricaoForm')
+  const lista = document.getElementById('listaParticipantes')
+  const tpl = document.getElementById('tplParticipante')
+  const btnAdicionar = document.getElementById('btnAdicionarParticipante')
+  const resumo = document.getElementById('resumoTotal')
+  if (!form || !lista || !tpl) return
 
+  const submitBtn = form.querySelector('button[type="submit"]')
+  const tituloEvento = document.getElementById('nomeEvento')
   const evento = await carregarEventoAtual(api)
-  const tituloEvento = document.getElementById('nomeEvento') || document.querySelector('.contact-form p')
 
+  let provas = []
   if (evento) {
-    if (tituloEvento) tituloEvento.textContent = evento.titulo || 'Evento'
-  } else {
-    if (tituloEvento) tituloEvento.textContent = 'Evento não encontrado'
-    const submitBtn = form.querySelector('button[type="submit"]')
+    const { data } = await api.getProvasEvento(evento.id)
+    provas = data || []
+  }
+
+  if (tituloEvento) tituloEvento.textContent = evento ? (evento.titulo || 'Evento') : 'Evento não encontrado'
+
+  if (!evento || provas.length === 0 || evento.estado !== 'aberto') {
+    if (btnAdicionar) btnAdicionar.style.display = 'none'
     if (submitBtn) {
       submitBtn.disabled = true
       submitBtn.style.opacity = '0.6'
-      submitBtn.textContent = 'Inscrições indisponíveis'
+      submitBtn.textContent = evento?.estado === 'brevemente' ? 'Inscrições brevemente disponíveis' : 'Inscrições indisponíveis'
     }
+    return
   }
+
+  const multiplas = !!evento.permite_multiplas_provas
+  const unidade = evento.contribuicao_unidade
+  let contador = 0
+
+  function provasSelecionadas(bloco) {
+    return Array.from(bloco.querySelectorAll('.provas-opcoes input:checked')).map(i => i.value)
+  }
+
+  function renderOpcoesProva(bloco, uid) {
+    const container = bloco.querySelector('.provas-opcoes')
+    const titulo = bloco.querySelector('.participante-provas-titulo')
+
+    // Uma só prova: fica escolhida automaticamente.
+    if (provas.length === 1) {
+      const p = provas[0]
+      titulo.textContent = 'Prova'
+      container.innerHTML = `
+        <input type="checkbox" value="${escapeHtml(p.id)}" checked hidden>
+        <div class="prova-unica"><strong>${escapeHtml(p.nome)}</strong> &mdash; ${escapeHtml(api.formatarContribuicao(p.valor, unidade))}</div>`
+      return
+    }
+
+    titulo.textContent = multiplas ? 'Provas * (pode escolher mais do que uma)' : 'Prova *'
+    const tipo = multiplas ? 'checkbox' : 'radio'
+    container.innerHTML = provas.map(p => `
+      <label class="prova-opcao">
+        <input type="${tipo}" name="provas_${uid}" value="${escapeHtml(p.id)}">
+        <span class="prova-opcao-texto">
+          <strong>${escapeHtml(p.nome)}</strong>
+          ${p.descricao ? `<small>${escapeHtml(p.descricao)}</small>` : ''}
+        </span>
+        <span class="prova-opcao-valor">${escapeHtml(api.formatarContribuicao(p.valor, unidade))}</span>
+      </label>`).join('')
+  }
+
+  function renumerar() {
+    Array.from(lista.children).forEach((bloco, indice) => {
+      bloco.querySelector('.participante-num').textContent = indice + 1
+      // O 1.º participante usa o contacto do formulário; os restantes podem ter o seu.
+      bloco.querySelector('.participante-remover').style.display = indice === 0 ? 'none' : ''
+      bloco.querySelector('.participante-contacto').style.display = indice === 0 ? 'none' : ''
+    })
+    if (btnAdicionar) btnAdicionar.style.display = lista.children.length >= MAX_PARTICIPANTES ? 'none' : ''
+  }
+
+  function atualizarTotal() {
+    if (!resumo) return
+    let total = 0
+    const linhas = []
+    Array.from(lista.children).forEach((bloco, indice) => {
+      const nome = bloco.querySelector('[data-campo="nome"]').value.trim() || `Participante ${indice + 1}`
+      provasSelecionadas(bloco).forEach(provaId => {
+        const prova = provas.find(p => p.id === provaId)
+        if (!prova) return
+        total += Number(prova.valor) || 0
+        linhas.push(`<div class="inscricao-total-linha"><span>${escapeHtml(nome)} &middot; ${escapeHtml(prova.nome)}</span><span>${escapeHtml(api.formatarContribuicao(prova.valor, unidade))}</span></div>`)
+      })
+    })
+    resumo.innerHTML = linhas.join('') +
+      `<div class="inscricao-total-valor"><span>Contribuição total</span><strong>${escapeHtml(api.formatarContribuicao(total, unidade))}</strong></div>`
+  }
+
+  function adicionarParticipante() {
+    if (lista.children.length >= MAX_PARTICIPANTES) return
+    const uid = ++contador
+    const bloco = tpl.content.firstElementChild.cloneNode(true)
+    bloco.querySelectorAll('[data-campo]').forEach(el => { el.id = `${el.dataset.campo}_${uid}` })
+    bloco.querySelectorAll('label[data-para]').forEach(label => { label.htmlFor = `${label.dataset.para}_${uid}` })
+    renderOpcoesProva(bloco, uid)
+    bloco.querySelector('.participante-remover').addEventListener('click', () => {
+      bloco.remove()
+      renumerar()
+      atualizarTotal()
+    })
+    lista.appendChild(bloco)
+    renumerar()
+    atualizarTotal()
+    if (uid > 1) bloco.querySelector('[data-campo="nome"]').focus()
+  }
+
+  lista.addEventListener('input', atualizarTotal)
+  lista.addEventListener('change', atualizarTotal)
+  if (btnAdicionar) btnAdicionar.addEventListener('click', adicionarParticipante)
+  adicionarParticipante()
 
   form.addEventListener('submit', async function (event) {
     event.preventDefault()
 
     if (form.website && form.website.value.trim()) return
 
-    if (!evento) {
-      mostrarMensagem(form, 'Este evento ainda nao esta disponivel para inscricoes online.', 'erro')
+    const blocos = Array.from(lista.children)
+    const semProva = blocos.findIndex(bloco => provasSelecionadas(bloco).length === 0)
+    if (semProva !== -1) {
+      mostrarMensagem(form, `Escolha a prova do participante ${semProva + 1}.`, 'erro')
+      blocos[semProva].scrollIntoView({ behavior: 'smooth', block: 'center' })
       return
     }
 
-    const submitBtn = form.querySelector('button[type="submit"]')
-    bloquearBotao(submitBtn, true, 'A guardar inscricao...')
-
+    const campo = (bloco, nome) => bloco.querySelector(`[data-campo="${nome}"]`).value.trim()
     const dados = {
       evento_id: evento.id,
-      nome: form.nome.value.trim(),
-      data_nascimento: form.nascimento.value || null,
-      sexo: form.sexo.value,
-      pais: form.pais.value.trim(),
-      localidade: form.localidade.value.trim(),
-      equipa: form.equipa.value.trim() || null,
-      telefone: form.telefone.value.trim(),
       email: form.email.value.trim(),
-      bi: form.bi.value.trim(),
+      telefone: form.telefone.value.trim(),
       nif: form.nif.value.trim(),
-      tamanho_tshirt: form.tamanho_tshirt.value || null,
-      pedido_fatura: form.pedido_fatura.checked
+      pedido_fatura: form.pedido_fatura.checked,
+      participantes: blocos.map((bloco, indice) => ({
+        nome: campo(bloco, 'nome'),
+        data_nascimento: campo(bloco, 'nascimento') || null,
+        sexo: campo(bloco, 'sexo'),
+        pais: campo(bloco, 'pais'),
+        localidade: campo(bloco, 'localidade'),
+        equipa: campo(bloco, 'equipa') || null,
+        bi: campo(bloco, 'bi'),
+        tamanho_tshirt: campo(bloco, 'tamanho_tshirt') || null,
+        email: indice === 0 ? null : (campo(bloco, 'email') || null),
+        telefone: indice === 0 ? null : (campo(bloco, 'telefone') || null),
+        provas: provasSelecionadas(bloco)
+      }))
     }
 
-    const { data, error } = await api.criarInscricaoEvento(dados)
-
+    bloquearBotao(submitBtn, true, 'A guardar inscrição...')
+    const { data, error } = await api.criarInscricaoGrupo(dados)
     bloquearBotao(submitBtn, false, 'Seguir para Pagamento')
 
     if (error) {
-      mostrarMensagem(form, 'Nao foi possivel guardar a inscricao. Verifique se ja existe uma inscricao com este nome, email e numero de documento para este evento.', 'erro')
+      // P0001 = mensagem escrita por nós na função criar_inscricao_grupo
+      const texto = error.code === 'P0001' && error.message
+        ? error.message
+        : 'Não foi possível guardar a inscrição. Tente novamente.'
+      mostrarMensagem(form, texto, 'erro')
+      form.scrollIntoView({ behavior: 'smooth', block: 'start' })
       return
     }
 
-    api.dispararEmailInscricao(data.inscricao_id, 'pendente')
-
+    // O email "pendente" é enviado pelo trigger inscricoes_evento_email_pendente.
     const pagamentoToken = data.pagamento_token || data.public_token
 
     sessionStorage.setItem('usga_inscricao_evento_id', data.inscricao_id)
@@ -779,19 +886,27 @@ async function configurarEventoPublico(api) {
 
   if (!evento) return
 
-  const { data: inscritos, error } = await api.getInscritosConfirmados(evento.id)
+  const [{ data: inscritos, error }, { data: provas }] = await Promise.all([
+    api.getInscritosConfirmados(evento.id),
+    api.getProvasEvento(evento.id)
+  ])
   const tbody = document.querySelector('#participantsTable tbody')
   const stats = document.querySelectorAll('.stat-number')
 
   if (!tbody) return
 
+  // A coluna "Prova" só aparece quando o evento tem mais do que uma prova.
+  const mostrarProva = (provas || []).length > 1
+  document.querySelectorAll('#participantsTable th.col-prova').forEach(th => { th.style.display = mostrarProva ? '' : 'none' })
+  const colunas = mostrarProva ? 6 : 5
+
   if (error) {
-    tbody.innerHTML = '<tr><td colspan="5">Nao foi possivel carregar a lista de inscritos.</td></tr>'
+    tbody.innerHTML = `<tr><td colspan="${colunas}">Nao foi possivel carregar a lista de inscritos.</td></tr>`
     return
   }
 
   if (!inscritos || inscritos.length === 0) {
-    tbody.innerHTML = '<tr><td colspan="5">Ainda nao existem inscricoes para este evento.</td></tr>'
+    tbody.innerHTML = `<tr><td colspan="${colunas}">Ainda nao existem inscricoes para este evento.</td></tr>`
   } else {
     tbody.innerHTML = inscritos.map((inscrito, index) => {
       const confirmado = inscrito.estado_publico === 'confirmada'
@@ -803,6 +918,7 @@ async function configurarEventoPublico(api) {
       <tr>
         <td style="font-weight:bold; color: #666;">${abreviarPais(inscrito.pais)}</td>
         <td>${escapeHtml(inscrito.nome)}</td>
+        ${mostrarProva ? `<td>${escapeHtml(inscrito.prova_nome) || '-'}</td>` : ''}
         <td>${escapeHtml(inscrito.equipa) || '-'}</td>
         <td><strong>${dorsal}</strong></td>
         <td>${badge}</td>
@@ -900,9 +1016,21 @@ async function configurarPagamentoEvento(api) {
       }
     }
 
-    if (valorEl) valorEl.innerHTML = valor ? api.formatarContribuicao(valor) : 'A aguardar valor'
+    // Participantes ligados a este pagamento (1 numa inscrição individual, até 5 num grupo)
+    const { data: grupo } = await api.getParticipantesGrupo(token)
+    const unidade = grupo?.[0]?.contribuicao_unidade || null
+
+    if (valorEl) valorEl.textContent = valor ? api.formatarContribuicao(valor, unidade) : 'A aguardar valor'
     if (eventoEl) eventoEl.textContent = titulo
-    if (inscritoEl) inscritoEl.textContent = nome
+    if (inscritoEl) {
+      if (grupo && grupo.length > 0) {
+        inscritoEl.innerHTML = grupo
+          .map(g => `${escapeHtml(g.nome)}${g.prova_nome ? ` <small style="font-weight:400;color:#777;">(${escapeHtml(g.prova_nome)})</small>` : ''}`)
+          .join('<br>')
+      } else {
+        inscritoEl.textContent = nome
+      }
+    }
 
     if (new URLSearchParams(window.location.search).get('debug') === '1') {
       let debugDiv = document.getElementById('debugPagamento')
@@ -1041,12 +1169,33 @@ async function configurarEstadoInscricao(api) {
 
   const faturaUrl = data.fatura_url ? api.getFaturaUrl(data.fatura_url) : null
 
+  // Restantes participantes inscritos com o mesmo pagamento (inscrição de grupo)
+  const { data: grupo } = await api.getParticipantesGrupo(token)
+  const proprio = (grupo || []).find(g => g.nome === data.nome)
+  const tabelaGrupo = grupo && grupo.length > 1 ? `
+    <h3 style="margin: 30px 0 12px;">Participantes desta inscrição</h3>
+    <div class="participants-table-wrapper">
+      <table class="participants-table">
+        <thead><tr><th>Nome</th><th>Prova</th><th>Estado</th><th>Dorsal</th></tr></thead>
+        <tbody>
+          ${grupo.map(g => `
+            <tr>
+              <td>${escapeHtml(g.nome)}</td>
+              <td>${escapeHtml(g.prova_nome) || '-'}</td>
+              <td><span class="badge ${g.estado === 'confirmada' ? 'badge-pago' : 'badge-pendente'}">${estadoInscricaoLabel(g.estado)}</span></td>
+              <td>${escapeHtml(g.dorsal) || '-'}</td>
+            </tr>`).join('')}
+        </tbody>
+      </table>
+    </div>` : ''
+
   resultBox.innerHTML = `
     <div class="participants-table-wrapper">
       <table class="participants-table">
         <tbody>
-          <tr><th>Evento</th><td>${data.evento_titulo}</td></tr>
+          <tr><th>Evento</th><td>${escapeHtml(data.evento_titulo)}</td></tr>
           <tr><th>Nome</th><td>${escapeHtml(data.nome)}</td></tr>
+          ${proprio?.prova_nome ? `<tr><th>Prova</th><td>${escapeHtml(proprio.prova_nome)}</td></tr>` : ''}
           <tr><th>Inscricao</th><td><span class="badge ${data.estado === 'confirmada' ? 'badge-pago' : 'badge-pendente'}">${estadoInscricaoLabel(data.estado)}</span></td></tr>
           <tr><th>Pagamento</th><td><span class="badge ${data.pagamento_estado === 'validado' ? 'badge-pago' : 'badge-pendente'}">${estadoPagamentoLabel(data.pagamento_estado)}</span></td></tr>
           <tr><th>Dorsal</th><td>${data.dorsal || '-'}</td></tr>
@@ -1055,6 +1204,7 @@ async function configurarEstadoInscricao(api) {
         </tbody>
       </table>
     </div>
+    ${tabelaGrupo}
   `
 }
 
@@ -1221,7 +1371,52 @@ async function configurarDetalheEvento(api) {
   if (dataEl) dataEl.textContent = api.formatarData(evento.data_evento)
   if (fimInscricoesEl) fimInscricoesEl.textContent = evento.data_fim_inscricoes ? api.formatarData(evento.data_fim_inscricoes) : '-'
   if (localEl) localEl.textContent = evento.local || '-'
-  if (precoEl) precoEl.innerHTML = typeof api.formatarContribuicao === 'function' ? api.formatarContribuicao(evento.preco || 0) : (evento.preco || '-')
+  const [{ data: provasData }, { data: documentosData }] = await Promise.all([
+    api.getProvasEvento(evento.id),
+    api.getDocumentosEvento(evento.id)
+  ])
+  const provas = provasData || []
+  const documentos = documentosData || []
+  const unidade = evento.contribuicao_unidade
+
+  if (precoEl) {
+    if (provas.length === 0) {
+      precoEl.textContent = '-'
+    } else if (provas.length === 1) {
+      precoEl.textContent = api.formatarContribuicao(provas[0].valor, unidade)
+    } else {
+      precoEl.innerHTML = provas
+        .map(p => `<span style="display:block;">${escapeHtml(p.nome)}: <strong>${escapeHtml(api.formatarContribuicao(p.valor, unidade))}</strong></span>`)
+        .join('')
+    }
+  }
+
+  // Provas com descrição (página de evento futuro)
+  const provasBox = document.getElementById('provasBox')
+  const listaProvas = document.getElementById('listaProvas')
+  if (provasBox && listaProvas) {
+    if (provas.length > 1 || provas.some(p => p.descricao)) {
+      listaProvas.innerHTML = provas.map(p => `
+        <div class="prova-evento">
+          <div class="prova-evento-topo">
+            <span>${escapeHtml(p.nome)}</span>
+            <span>${escapeHtml(api.formatarContribuicao(p.valor, unidade))}</span>
+          </div>
+          ${p.descricao ? `<p>${escapeHtml(p.descricao)}</p>` : ''}
+        </div>`).join('')
+      provasBox.style.display = 'block'
+    } else {
+      provasBox.style.display = 'none'
+    }
+  }
+
+  // Lista de provas na barra lateral (página de evento passado)
+  const provasSidebarItem = document.getElementById('provasSidebarItem')
+  const provasEventoEl = document.getElementById('provasEvento')
+  if (provasSidebarItem && provasEventoEl && provas.length > 1) {
+    provasEventoEl.innerHTML = provas.map(p => `<span style="display:block;">${escapeHtml(p.nome)}</span>`).join('')
+    provasSidebarItem.style.display = 'block'
+  }
 
   if (btnReg) {
     if (evento.regulamento_url) {
@@ -1232,25 +1427,22 @@ async function configurarDetalheEvento(api) {
     }
   }
 
-  // Informação adicional: lista de links (percurso, fotos, resultados, documentos...),
-  // distinta da descrição do evento. Visível para todos (anónimos e autenticados),
-  // já que a tabela "eventos" já é de leitura pública.
+  // Informação adicional (mapa, percurso...) e resultados (classificações,
+  // participantes...), agrupados por prova. Tabela evento_documentos.
   const infoBox = document.getElementById('infoAdicionalBox')
   const infoLista = document.getElementById('listaInfoAdicional')
   if (infoBox && infoLista) {
-    const links = Array.isArray(evento.links_adicionais) ? evento.links_adicionais.filter(l => l?.url) : []
-    if (links.length > 0) {
-      infoLista.innerHTML = links.map(l => `
-        <li style="margin-bottom:10px;">
-          <a href="${l.url}" target="_blank" rel="noopener" style="color: var(--accent-color); font-weight:600; display:flex; align-items:center; gap:8px;">
-            🔗 ${l.titulo || l.url}
-          </a>
-        </li>
-      `).join('')
-      infoBox.style.display = 'block'
-    } else {
-      infoBox.style.display = 'none'
-    }
+    const info = documentos.filter(d => d.seccao === 'informacao')
+    infoLista.innerHTML = renderDocumentosPorProva(info, provas)
+    infoBox.style.display = info.length > 0 ? 'block' : 'none'
+  }
+
+  const listaResultados = document.getElementById('listaResultados')
+  if (listaResultados) {
+    const resultados = documentos.filter(d => d.seccao === 'resultados')
+    listaResultados.innerHTML = resultados.length > 0
+      ? renderDocumentosPorProva(resultados, provas)
+      : '<p style="color:#999;">Os resultados e documentos deste evento ainda não foram publicados.</p>'
   }
 
   // If future event page: add inscription button if estado is 'aberto'
@@ -1277,6 +1469,43 @@ async function configurarDetalheEvento(api) {
       }
     }
   }
+}
+
+// Agrupa documentos por prova ("Geral" primeiro, depois pela ordem das provas).
+// O título de cada grupo só aparece quando há documentos de alguma prova.
+function renderDocumentosPorProva(documentos, provas) {
+  if (!documentos.length) return ''
+  const grupos = [{ id: null, nome: 'Geral' }, ...provas]
+    .map(g => ({ nome: g.nome, docs: documentos.filter(d => (d.prova_id || null) === g.id) }))
+    .filter(g => g.docs.length > 0)
+  const mostrarTitulos = grupos.some(g => g.nome !== 'Geral')
+
+  return grupos.map(g => `
+    <div class="documentos-grupo">
+      ${mostrarTitulos ? `<h4>${escapeHtml(g.nome)}</h4>` : ''}
+      <ul class="documentos-lista">
+        ${g.docs.map(d => `
+          <li>
+            <a href="${escapeHtml(urlSegura(d.url))}" target="_blank" rel="noopener">
+              <span aria-hidden="true">${iconeDocumento(d)}</span>
+              <span>${escapeHtml(d.titulo || d.url)}</span>
+            </a>
+          </li>`).join('')}
+      </ul>
+    </div>`).join('')
+}
+
+function iconeDocumento(doc) {
+  if (doc.tipo === 'link') return '🔗'
+  const extensao = (String(doc.url || '').split('?')[0].split('.').pop() || '').toLowerCase()
+  if (extensao === 'pdf') return '📄'
+  if (['xls', 'xlsx', 'csv', 'ods'].includes(extensao)) return '📊'
+  if (['jpg', 'jpeg', 'png', 'gif', 'webp', 'heic'].includes(extensao)) return '🖼️'
+  return '📎'
+}
+
+function urlSegura(url) {
+  return /^https?:\/\//i.test(String(url || '').trim()) ? String(url).trim() : '#'
 }
 
 function abreviarPais(pais) {
