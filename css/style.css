@@ -1530,3 +1530,345 @@ body:not(.home-page) .nav-toggle span {
     }
 }
 
+
+/* --- PÁGINA DE PAGAMENTO (2 passos) --- */
+.hero-bg-slideshow.hero-compacto {
+    padding-top: 50px;
+    padding-bottom: 45px;
+}
+
+.hero-compacto .hero-content h1 {
+    font-size: 34px;
+    margin-bottom: 8px;
+}
+
+.pagamento-seccao {
+    padding: 35px 0 80px;
+}
+
+.pagamento-container {
+    max-width: 1080px;
+}
+
+/* Computador: "Pagar" e "Enviar comprovativo" lado a lado, para o formulário
+   ficar visível sem descer. Telemóvel: um por baixo do outro. */
+.pagamento-grelha {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 30px;
+    align-items: start;
+}
+
+.pagamento-grelha .metodos-pagamento {
+    grid-template-columns: 1fr;
+}
+
+.pagamento-coluna-comprovativo .titulo-passo:first-child {
+    margin-top: 0;
+}
+
+@media (max-width: 900px) {
+    .pagamento-grelha {
+        grid-template-columns: 1fr;
+        gap: 0;
+    }
+}
+
+.passos-pagamento {
+    list-style: none;
+    display: flex;
+    gap: 10px;
+    padding: 0;
+    margin-bottom: 18px;
+}
+
+.passo-indicador {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 14px;
+    border-radius: 10px;
+    background: #f3f4f6;
+    color: #6b7280;
+    font-weight: 600;
+    font-size: 14px;
+}
+
+.passo-indicador span,
+.titulo-passo span {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 26px;
+    height: 26px;
+    border-radius: 50%;
+    background: #d1d5db;
+    color: #fff;
+    font-size: 13px;
+    font-weight: 700;
+    flex-shrink: 0;
+}
+
+.passo-indicador.ativo {
+    background: var(--accent-light);
+    color: var(--accent-dark);
+}
+
+.passo-indicador.ativo span,
+.titulo-passo span {
+    background: var(--accent-color);
+}
+
+.passo-indicador.concluido {
+    background: var(--accent-color);
+    color: #fff;
+}
+
+.passo-indicador.concluido span {
+    background: #fff;
+    color: var(--accent-color);
+}
+
+.aviso-comprovativo {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    background: #fff7e6;
+    border: 1px solid #f5c26b;
+    border-radius: 10px;
+    padding: 14px 16px;
+    font-size: 14px;
+    color: #7a4b00;
+    margin-bottom: 18px;
+}
+
+.aviso-comprovativo.concluido {
+    background: var(--accent-light);
+    border-color: #9cc78a;
+    color: var(--accent-dark);
+}
+
+.resumo-pagamento {
+    background: #fff;
+    border: 1px solid var(--border-color);
+    border-radius: 14px;
+    padding: 6px 20px;
+    margin-bottom: 30px;
+}
+
+.resumo-linha {
+    display: flex;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 10px 0;
+    border-bottom: 1px solid var(--border-color);
+    font-size: 15px;
+}
+
+.resumo-linha:last-child {
+    border-bottom: none;
+}
+
+.resumo-linha span {
+    color: #666;
+}
+
+.resumo-linha strong {
+    text-align: right;
+}
+
+.resumo-valor strong {
+    font-size: 20px;
+    color: var(--accent-dark);
+}
+
+.titulo-passo {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 20px;
+    margin: 10px 0 14px;
+    scroll-margin-top: 90px;
+}
+
+.metodos-pagamento {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+}
+
+.metodo-pagamento {
+    background: #fff;
+    border: 1px solid var(--border-color);
+    border-radius: 14px;
+    padding: 16px 18px;
+}
+
+.metodo-titulo {
+    display: block;
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    color: #888;
+    margin-bottom: 6px;
+}
+
+.metodo-valor {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    font-size: 17px;
+    font-weight: 700;
+    color: var(--primary-color);
+    margin-bottom: 4px;
+}
+
+.metodo-pagamento small {
+    font-size: 13px;
+    color: #666;
+}
+
+.btn-copiar {
+    flex-shrink: 0;
+    border: 1px solid var(--accent-color);
+    background: #fff;
+    color: var(--accent-color);
+    border-radius: 8px;
+    padding: 5px 10px;
+    font-size: 12px;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+.btn-copiar.copiado {
+    background: var(--accent-color);
+    color: #fff;
+}
+
+.nota-referencia {
+    font-size: 14px;
+    color: var(--text-color);
+    margin: 12px 0 30px;
+}
+
+.form-comprovativo {
+    border: 2px solid var(--accent-color);
+}
+
+.area-upload {
+    position: relative;
+    display: flex !important;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    padding: 24px 16px;
+    border: 2px dashed #9cc78a;
+    border-radius: 12px;
+    background: #fff;
+    text-align: center;
+    cursor: pointer;
+    margin-bottom: 0 !important;
+}
+
+.area-upload:hover,
+.area-upload.com-ficheiro {
+    border-color: var(--accent-color);
+    background: var(--accent-light);
+}
+
+.area-upload-icone {
+    font-size: 30px;
+    line-height: 1;
+}
+
+.area-upload small {
+    font-weight: 400;
+    color: #666;
+    word-break: break-all;
+}
+
+.area-upload.com-ficheiro small {
+    color: var(--accent-dark);
+    font-weight: 600;
+}
+
+/* Escondido visualmente mas focável, para a validação do browser funcionar */
+.input-upload-escondido {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    opacity: 0;
+    bottom: 0;
+    left: 50%;
+}
+
+.nota-spam {
+    font-size: 13px;
+    color: #666;
+    margin-top: 20px;
+}
+
+.cta-comprovativo-mobile {
+    display: none;
+}
+
+@media (max-width: 768px) {
+    .hero-bg-slideshow.hero-compacto {
+        padding-top: 30px;
+        padding-bottom: 28px;
+    }
+
+    .hero-compacto .hero-content h1 {
+        font-size: 26px;
+    }
+
+    .pagamento-seccao {
+        padding-top: 22px;
+    }
+
+    .passo-indicador {
+        font-size: 13px;
+        padding: 8px 10px;
+    }
+
+    .metodos-pagamento {
+        grid-template-columns: 1fr;
+        gap: 10px;
+    }
+
+    .metodo-pagamento {
+        padding: 12px 14px;
+    }
+
+    .metodo-valor {
+        font-size: 15px;
+    }
+
+    .resumo-pagamento {
+        margin-bottom: 22px;
+    }
+
+    .cta-comprovativo-mobile:not([hidden]) {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        position: fixed;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        z-index: 900;
+        padding: 12px 16px calc(12px + env(safe-area-inset-bottom));
+        background: #fff;
+        border-top: 1px solid var(--border-color);
+        box-shadow: 0 -4px 16px rgba(0, 0, 0, 0.08);
+        font-weight: 600;
+    }
+
+    body.com-cta-mobile {
+        padding-bottom: 76px;
+    }
+}
+
