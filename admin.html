@@ -61,6 +61,10 @@
         .doc-row-fonte .doc-tipo { width: auto; flex-shrink: 0; }
         .ev-docs-lista { display: flex; flex-direction: column; gap: 10px; margin-bottom: 8px; }
         .doc-atual { font-size: 12px; color: #666; margin-top: 6px; }
+        .participants-table tr.grupo-cabecalho td { background: #f5f3ff; color: #5b21b6; font-size: 13px; padding: 8px 20px; border-top: 2px solid #ddd6fe; }
+        .participants-table tr.grupo-membro td:first-child { border-left: 4px solid #c4b5fd; }
+        .participants-table tr.grupo-membro td { background: #fcfbff; }
+        .lista-grupo-pagamento { margin: 6px 0 0; padding-left: 16px; font-size: 12px; color: #5b21b6; }
         .btn-danger { background: #fee2e2; color: #991b1b; border: none; padding: 7px 14px; border-radius: 6px; cursor: pointer; font-size: 13px; font-weight: 700; }
         .btn-secondary { background: #f0f0f0; color: #444; border: none; padding: 7px 14px; border-radius: 6px; cursor: pointer; font-size: 13px; }
         .tag-aberto { background:#dcfce7; color:#166534; }
@@ -1561,20 +1565,16 @@
             const tbody = document.getElementById('tbl-inscricoes')
             if (!data?.length) { tbody.innerHTML = '<tr><td colspan="12" style="text-align:center;color:#999;">Sem inscrições.</td></tr>'; return }
 
-            tbody.innerHTML = ''
-            data.forEach(i => {
+            const desenharLinha = (i, emGrupo) => {
                 const tr = document.createElement('tr')
+                if (emGrupo) tr.className = 'grupo-membro'
                 const estadoInscricao = (i.estado === 'confirmada' && i.pagamento_estado === 'validado')
                     ? '<span class="badge badge-pago">Confirmada</span>'
                     : '<span class="badge badge-pendente">Pendente</span>'
-                const tamanhoGrupo = (i.pagamento_id && window._tamanhoGrupo?.[i.pagamento_id]) || 1
-                const grupo = tamanhoGrupo > 1
-                    ? `<br><small style="color:#5b21b6;" title="Inscrição de grupo com um único pagamento">👪 Grupo de ${tamanhoGrupo}</small>`
-                    : ''
                 tr.innerHTML = `
                     <td>${escapeHtml(i.eventos?.titulo) || '-'}</td>
                     <td>${escapeHtml(i.evento_provas?.nome) || '-'}</td>
-                    <td>${escapeHtml(i.nome)}${grupo}</td>
+                    <td>${escapeHtml(i.nome)}</td>
                     <td style="font-size:12px;">${escapeHtml(i.email)}</td>
                     <td>${escapeHtml(i.nif) || '-'}</td>
                     <td>${escapeHtml(i.localidade) || '-'}</td>
@@ -1652,6 +1652,41 @@
                     carregarDashboard()
                 }))
                 tbody.appendChild(tr)
+            }
+
+            // Inscrições feitas em conjunto (mesmo pagamento) aparecem seguidas,
+            // debaixo de um cabeçalho com o contacto e o estado do pagamento.
+            const ordemGrupos = []
+            const membrosPorGrupo = new Map()
+            data.forEach(i => {
+                const chave = i.pagamento_id || i.id
+                if (!membrosPorGrupo.has(chave)) {
+                    membrosPorGrupo.set(chave, [])
+                    ordemGrupos.push(chave)
+                }
+                membrosPorGrupo.get(chave).push(i)
+            })
+
+            tbody.innerHTML = ''
+            ordemGrupos.forEach(chave => {
+                const membros = membrosPorGrupo.get(chave)
+                    .sort((a, b) => new Date(a.data_inscricao) - new Date(b.data_inscricao))
+                const tamanhoGrupo = window._tamanhoGrupo?.[chave] || 1
+                if (tamanhoGrupo > 1) {
+                    const titular = membros[0]
+                    const ocultos = tamanhoGrupo - membros.length
+                    const cabecalho = document.createElement('tr')
+                    cabecalho.className = 'grupo-cabecalho'
+                    cabecalho.innerHTML = `
+                        <td colspan="12">
+                            👪 <strong>Inscrição de grupo · ${tamanhoGrupo} pessoas</strong>
+                            · contacto ${escapeHtml(titular.email)}
+                            · pagamento ${pagBadge[titular.pagamento_estado] || escapeHtml(titular.pagamento_estado)}
+                            ${ocultos > 0 ? `<small>(${ocultos} escondida(s) pelos filtros)</small>` : ''}
+                        </td>`
+                    tbody.appendChild(cabecalho)
+                }
+                membros.forEach(i => desenharLinha(i, tamanhoGrupo > 1))
             })
         }
 
@@ -2221,7 +2256,10 @@
                     .from('pagamentos')
                     .select('*, utilizadores!utilizador_id(nome, apelido, email), inscricoes_evento(nome, email)')
                     .order('created_at', { ascending: false }),
-                supabase.from('inscricoes_evento').select('pagamento_id, nome').not('pagamento_id', 'is', null)
+                supabase.from('inscricoes_evento')
+                    .select('pagamento_id, nome, data_inscricao, evento_provas(nome)')
+                    .not('pagamento_id', 'is', null)
+                    .order('data_inscricao', { ascending: true })
             ])
             const tbody = document.getElementById('tbl-pagamentos')
             if (error) {
@@ -2232,7 +2270,7 @@
             todosPagamentos = data || []
             participantesPorPagamento = {}
             ;(grupos || []).forEach(g => {
-                (participantesPorPagamento[g.pagamento_id] ||= []).push(g.nome)
+                (participantesPorPagamento[g.pagamento_id] ||= []).push({ nome: g.nome, prova: g.evento_provas?.nome || null })
             })
             filtrarPagamentos()
         }
@@ -2244,7 +2282,8 @@
             const filtrado = todosPagamentos.filter(p => {
                 const u = p.utilizadores
                 const inscricao = p.inscricoes_evento
-                const alvo = `${u?.nome || ''} ${u?.apelido || ''} ${u?.email || ''} ${inscricao?.nome || ''} ${inscricao?.email || ''}`.toLowerCase()
+                const grupo = (participantesPorPagamento[p.id] || []).map(g => g.nome).join(' ')
+                const alvo = `${u?.nome || ''} ${u?.apelido || ''} ${u?.email || ''} ${inscricao?.nome || ''} ${inscricao?.email || ''} ${grupo}`.toLowerCase()
                 return alvo.includes(termo) && (!filtro || p.estado === filtro) && (!filtroTipo || p.tipo === filtroTipo)
             })
             renderPagamentos(filtrado)
@@ -2260,8 +2299,12 @@
                 const nome = u ? `${escapeHtml(u.nome)} ${escapeHtml(u.apelido)}`.trim() : (escapeHtml(inscricao?.nome) || '-')
                 const email = escapeHtml(u?.email || inscricao?.email) || ''
                 const participantes = participantesPorPagamento[p.id] || []
+                // Pagamento de grupo: lista quem está incluído e em que prova
                 const grupo = participantes.length > 1
-                    ? `<br><small style="color:#5b21b6;" title="${escapeHtml(participantes.join(', '))}">👪 Grupo de ${participantes.length}</small>`
+                    ? `<br><small style="color:#5b21b6;font-weight:700;">👪 Grupo de ${participantes.length}</small>
+                       <ul class="lista-grupo-pagamento">
+                           ${participantes.map(g => `<li>${escapeHtml(g.nome)}${g.prova ? ` <span style="color:#888;">(${escapeHtml(g.prova)})</span>` : ''}</li>`).join('')}
+                       </ul>`
                     : ''
                 const tr = document.createElement('tr')
                 tr.innerHTML = `
