@@ -220,8 +220,10 @@ export async function getParticipantesGrupo(token) {
   return { data, error }
 }
 
+// Devolve a promessa do pedido: quem muda de página logo a seguir tem de
+// esperar por ela, senão o browser cancela o pedido e o email não sai.
 export function dispararEmailInscricao(inscricaoId, tipo) {
-  supabase.functions.invoke('enviar-email', { body: { categoria: 'inscricao', tipo, inscricao_id: inscricaoId } }).catch(() => {})
+  return supabase.functions.invoke('enviar-email', { body: { categoria: 'inscricao', tipo, inscricao_id: inscricaoId } }).catch(() => {})
 }
 
 export async function getMinhasInscricoes(utilizadorId) {
