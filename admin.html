@@ -414,8 +414,10 @@
                             <div class="form-group">
                                 <label><input type="checkbox" id="smtp-secure" style="width:auto;"> Ligação segura (TLS/SSL, normalmente porta 465)</label>
                             </div>
-                            <div class="form-group"><label>Utilizador</label><input type="text" id="smtp-user" placeholder="a-tua-conta@gmail.com"></div>
-                            <div class="form-group"><label>Password</label><input type="password" id="smtp-password" placeholder="Deixa em branco para manter a atual"></div>
+                            <div class="form-group"><label>Utilizador</label><input type="text" id="smtp-user" placeholder="a-tua-conta@gmail.com" autocomplete="off"></div>
+                            <!-- autocomplete="new-password": impede o browser de preencher aqui a password de login
+                                 do site, que depois era gravada por cima da password de aplicação do Gmail. -->
+                            <div class="form-group"><label>Password (password de aplicação do Gmail)</label><input type="password" id="smtp-password" name="smtp-app-password" placeholder="Deixa em branco para manter a atual" autocomplete="new-password"></div>
                             <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
                                 <div class="form-group"><label>Email de origem</label><input type="email" id="smtp-from-email" placeholder="usga.associacao@gmail.com"></div>
                                 <div class="form-group"><label>Nome de origem</label><input type="text" id="smtp-from-name" placeholder="USGA"></div>
