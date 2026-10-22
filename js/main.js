@@ -312,7 +312,7 @@ function configurarRegisto(api) {
     const submitBtn = registerForm.querySelector('button[type="submit"]')
 
     if (password !== confirmPassword) {
-      mostrarMensagem(registerForm, 'As passwords nao coincidem.', 'erro')
+      mostrarMensagem(registerForm, 'As passwords não coincidem.', 'erro')
       return
     }
 
@@ -368,10 +368,10 @@ function configurarPedidoSocio(api) {
 
     const { data, error } = await api.criarPedidoSocio(dados)
 
-    bloquearBotao(submitBtn, false, 'Tornar-me Socio')
+    bloquearBotao(submitBtn, false, 'Tornar-me Sócio')
 
     if (error) {
-      mostrarMensagem(form, 'Nao foi possivel guardar o pedido. Confirme os dados e tente novamente.', 'erro')
+      mostrarMensagem(form, 'Não foi possível guardar o pedido. Confirme os dados e tente novamente.', 'erro')
       return
     }
 
@@ -422,7 +422,7 @@ function configurarSuporte(api) {
 
     if (error) {
       bloquearBotao(submitBtn, false, 'Enviar Mensagem')
-      mostrarMensagem(form, 'Nao foi possivel enviar a mensagem. Tente novamente.', 'erro')
+      mostrarMensagem(form, 'Não foi possível enviar a mensagem. Tente novamente.', 'erro')
       return
     }
 
@@ -454,11 +454,11 @@ async function configurarPerfil(api, sessao) {
   const inputDataNascimento = document.getElementById('inputDataNascimento')
   const inputCidade = document.getElementById('inputCidade')
 
-  if (heroTitle) heroTitle.textContent = `Ola, ${primeiroNome}`
+  if (heroTitle) heroTitle.textContent = `Olá, ${primeiroNome}`
   if (profileName) profileName.textContent = nomeCompleto || perfil.email
   if (profileType) {
     profileType.textContent = perfil.numero_socio
-      ? `Socio n. ${perfil.numero_socio}`
+      ? `Sócio n.º ${perfil.numero_socio}`
       : 'Conta registada'
   }
 
@@ -548,7 +548,7 @@ function configurarEdicaoPerfil(api, sessao, perfil) {
     bloquearBotao(submitBtn, false, 'Guardar')
 
     if (error) {
-      mostrarMensagem(form, 'Nao foi possivel guardar as alteracoes. Tente novamente.', 'erro')
+      mostrarMensagem(form, 'Não foi possível guardar as alterações. Tente novamente.', 'erro')
       return
     }
 
@@ -573,12 +573,12 @@ async function carregarQuotasPerfil(api, utilizadorId) {
   const { data: quotas, error } = await api.getMinhasQuotas(utilizadorId)
 
   if (error) {
-    tbody.innerHTML = '<tr><td colspan="8">Nao foi possivel carregar as quotas.</td></tr>'
+    tbody.innerHTML = '<tr><td colspan="8">Não foi possível carregar as quotas.</td></tr>'
     return
   }
 
   if (!quotas || quotas.length === 0) {
-    tbody.innerHTML = '<tr><td colspan="8">Ainda nao existem quotas registadas.</td></tr>'
+    tbody.innerHTML = '<tr><td colspan="8">Ainda não existem quotas registadas.</td></tr>'
     if (badgeEstado) {
       badgeEstado.textContent = 'Sem quotas'
       badgeEstado.className = 'badge badge-pendente'
@@ -589,7 +589,7 @@ async function carregarQuotasPerfil(api, utilizadorId) {
   const temQuotaPendente = quotas.some(quota => ['por_pagar', 'pendente_validacao'].includes(quota.estado))
 
   if (badgeEstado) {
-    badgeEstado.textContent = temQuotaPendente ? 'Quota pendente' : 'Socio Ativo'
+    badgeEstado.textContent = temQuotaPendente ? 'Quota pendente' : 'Sócio Ativo'
     badgeEstado.className = temQuotaPendente ? 'badge badge-pendente' : 'badge badge-socio'
   }
 
@@ -665,12 +665,12 @@ async function carregarEventosPerfil(api, utilizadorId) {
   const { data: inscricoes, error } = await api.getMinhasInscricoes(utilizadorId)
 
   if (error) {
-    container.innerHTML = '<p style="color:#c00; text-align:center;">Nao foi possivel carregar os seus eventos.</p>'
+    container.innerHTML = '<p style="color:#c00; text-align:center;">Não foi possível carregar os seus eventos.</p>'
     return
   }
 
   if (!inscricoes || inscricoes.length === 0) {
-    container.innerHTML = '<p style="color:#999; text-align:center;">Ainda nao se inscreveu em nenhum evento.</p>'
+    container.innerHTML = '<p style="color:#999; text-align:center;">Ainda não se inscreveu em nenhum evento.</p>'
     return
   }
 
@@ -912,12 +912,12 @@ async function configurarEventoPublico(api) {
   const colunas = mostrarProva ? 6 : 5
 
   if (error) {
-    tbody.innerHTML = `<tr><td colspan="${colunas}">Nao foi possivel carregar a lista de inscritos.</td></tr>`
+    tbody.innerHTML = `<tr><td colspan="${colunas}">Não foi possível carregar a lista de inscritos.</td></tr>`
     return
   }
 
   if (!inscritos || inscritos.length === 0) {
-    tbody.innerHTML = `<tr><td colspan="${colunas}">Ainda nao existem inscricoes para este evento.</td></tr>`
+    tbody.innerHTML = `<tr><td colspan="${colunas}">Ainda não existem inscrições para este evento.</td></tr>`
   } else {
     tbody.innerHTML = inscritos.map((inscrito, index) => {
       const confirmado = inscrito.estado_publico === 'confirmada'
@@ -1174,7 +1174,7 @@ async function configurarEstadoInscricao(api) {
   const { data, error } = await api.getEstadoInscricao(token)
 
   if (error || !data) {
-    resultBox.innerHTML = '<p>Nao encontramos nenhuma inscricao com este codigo.</p>'
+    resultBox.innerHTML = '<p>Não encontrámos nenhuma inscrição com este código.</p>'
     return
   }
 
@@ -1207,7 +1207,7 @@ async function configurarEstadoInscricao(api) {
           <tr><th>Evento</th><td>${escapeHtml(data.evento_titulo)}</td></tr>
           <tr><th>Nome</th><td>${escapeHtml(data.nome)}</td></tr>
           ${proprio?.prova_nome ? `<tr><th>Prova</th><td>${escapeHtml(proprio.prova_nome)}</td></tr>` : ''}
-          <tr><th>Inscricao</th><td><span class="badge ${data.estado === 'confirmada' ? 'badge-pago' : 'badge-pendente'}">${estadoInscricaoLabel(data.estado)}</span></td></tr>
+          <tr><th>Inscrição</th><td><span class="badge ${data.estado === 'confirmada' ? 'badge-pago' : 'badge-pendente'}">${estadoInscricaoLabel(data.estado)}</span></td></tr>
           <tr><th>Pagamento</th><td><span class="badge ${data.pagamento_estado === 'validado' ? 'badge-pago' : 'badge-pendente'}">${estadoPagamentoLabel(data.pagamento_estado)}</span></td></tr>
           <tr><th>Dorsal</th><td>${data.dorsal || '-'}</td></tr>
           <tr><th>Data</th><td>${api.formatarData(data.data_inscricao)}</td></tr>
@@ -1519,16 +1519,49 @@ function urlSegura(url) {
   return /^https?:\/\//i.test(String(url || '').trim()) ? String(url).trim() : '#'
 }
 
+// Nome do país (como vem do formulário, ex: "Portugal") -> código ISO ("PT").
+// Usa os nomes em português do próprio browser; se não reconhecer o nome,
+// mostra as três primeiras letras.
+let codigosPaises = null
+
+// Nomes da lista do formulário que diferem dos nomes do browser.
+const CODIGOS_PAISES_EXTRA = {
+  'bahamas': 'BS', 'congo': 'CG', 'costa do marfim': 'CI', 'el salvador': 'SV',
+  'estados unidos da america': 'US', 'eswatini': 'SZ', 'kiribati': 'KI', 'kuwait': 'KW',
+  'myanmar': 'MM', 'oma': 'OM', 'republica checa': 'CZ', 'republica democratica do congo': 'CD',
+  'sri lanka': 'LK', 'vaticano': 'VA'
+}
+
+function normalizarNomePais(nome) {
+  return String(nome).normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().trim()
+}
+
 function abreviarPais(pais) {
   if (!pais) return '-'
-  if (pais.length <= 3) return pais.toUpperCase()
+  if (/^[A-Za-z]{2,3}$/.test(pais)) return pais.toUpperCase()
 
-  return pais.slice(0, 2).toUpperCase()
+  if (!codigosPaises) {
+    codigosPaises = { ...CODIGOS_PAISES_EXTRA }
+    try {
+      const nomes = new Intl.DisplayNames(['pt-PT'], { type: 'region' })
+      const letras = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
+      for (const a of letras) {
+        for (const b of letras) {
+          const nome = nomes.of(a + b)
+          if (nome && nome !== a + b) codigosPaises[normalizarNomePais(nome)] = a + b
+        }
+      }
+    } catch (e) {
+      // Browser sem Intl.DisplayNames: fica só a regra de recurso abaixo.
+    }
+  }
+
+  return codigosPaises[normalizarNomePais(pais)] || pais.slice(0, 3).toUpperCase()
 }
 
 function estadoInscricaoLabel(estado) {
   const labels = {
-    aguardando_pagamento: 'Aguardando Pagamento',
+    aguardando_pagamento: 'A aguardar pagamento',
     confirmada: 'Confirmada',
     rejeitada: 'Rejeitada',
     cancelada: 'Cancelada'
@@ -1540,7 +1573,7 @@ function estadoInscricaoLabel(estado) {
 function estadoPagamentoLabel(estado) {
   const labels = {
     pendente: 'Pendente',
-    em_validacao: 'Em Validacao',
+    em_validacao: 'Em Validação',
     validado: 'Validado',
     rejeitado: 'Rejeitado'
   }
@@ -1642,7 +1675,7 @@ function mostrarPromptTemConta() {
 function mostrarMensagemQuery(form) {
   const params = new URLSearchParams(window.location.search)
   if (params.get('registo') === 'sucesso') {
-    mostrarMensagem(form, 'Conta criada. Se o Supabase pedir confirmacao, verifique o seu email antes de entrar.', 'sucesso')
+    mostrarMensagem(form, 'Conta criada. Verifique o seu email para confirmar a conta antes de entrar.', 'sucesso')
   }
 }
 
@@ -1675,11 +1708,11 @@ function traduzirErroAuth(message) {
   const erro = String(message || '').toLowerCase()
 
   if (erro.includes('invalid login credentials')) return 'Email ou password incorretos.'
-  if (erro.includes('email not confirmed')) return 'Confirme o seu email antes de iniciar sessao.'
+  if (erro.includes('email not confirmed')) return 'Confirme o seu email antes de iniciar sessão.'
   if (erro.includes('user already registered')) return 'Ja existe uma conta com este email.'
-  if (erro.includes('password')) return 'A password nao cumpre os requisitos minimos.'
+  if (erro.includes('password')) return 'A password não cumpre os requisitos mínimos.'
 
-  return 'Nao foi possivel concluir a operacao. Tente novamente.'
+  return 'Não foi possível concluir a operação. Tente novamente.'
 }
 
 function escapeHtml(valor) {
