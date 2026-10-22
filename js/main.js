@@ -1158,9 +1158,10 @@ async function configurarPagamentoEvento(api) {
   }
 }
 
-// Página de pagamento: botões "Copiar", nome do ficheiro escolhido e atalho
-// do telemóvel para o passo 2 (muita gente pagava e não enviava o comprovativo).
-function configurarAjudasPagamento() {
+// Páginas de pagamento (inscrição e quota): botões "Copiar", nome do ficheiro
+// escolhido e atalho do telemóvel para o passo 2 (muita gente pagava e não
+// enviava o comprovativo). Também chamada pelo script de pagamento-quota.html.
+function configurarAjudasPagamento({ semAtalho = false } = {}) {
   document.querySelectorAll('.btn-copiar').forEach(botao => {
     botao.addEventListener('click', async () => {
       const texto = botao.dataset.copiar
@@ -1183,8 +1184,8 @@ function configurarAjudasPagamento() {
     })
   })
 
-  const ficheiro = document.getElementById('ficheiroComprovativo')
-  const nomeFicheiro = document.getElementById('nomeFicheiroComprovativo')
+  const ficheiro = document.querySelector('.area-upload .input-upload-escondido')
+  const nomeFicheiro = ficheiro?.closest('.area-upload')?.querySelector('small')
   if (ficheiro && nomeFicheiro) {
     const textoOriginal = nomeFicheiro.textContent
     ficheiro.addEventListener('change', () => {
@@ -1196,8 +1197,8 @@ function configurarAjudasPagamento() {
   }
 
   const atalho = document.getElementById('ctaComprovativoMobile')
-  const form = document.getElementById('comprovativoForm')
-  if (atalho && form) {
+  const form = document.querySelector('.form-comprovativo')
+  if (atalho && form && !semAtalho) {
     atalho.hidden = false
     document.body.classList.add('com-cta-mobile')
     // Quando o formulário já está à vista, o atalho deixa de ser preciso.
