@@ -950,6 +950,7 @@ async function configurarEventoPublico(api) {
 
 async function configurarPagamentoEvento(api) {
   if (!isPagina('pagamento-evento.html')) return
+  configurarAjudasPagamento()
   if (!api) return
 
   const params = new URLSearchParams(window.location.search)
@@ -1066,6 +1067,7 @@ async function configurarPagamentoEvento(api) {
       else if (estadoInscricao === 'aguardando_pagamento') estadoEl.textContent = 'A aguardar pagamento'
       else estadoEl.textContent = (pagamentoEstado || estadoInscricao || '-').toString()
     }
+    if (pagamentoEstado === 'em_validacao' || pagamentoEstado === 'validado') marcarPassoPagamento(3)
 
     if (referenciaEl) referenciaEl.textContent = `${nome} + ${titulo}`
 
@@ -1128,6 +1130,7 @@ async function configurarPagamentoEvento(api) {
               mostrarPopup('O seu pagamento já foi validado pela nossa equipa. Não é necessário submeter novamente.', 'sucesso')
               if (estadoEl) estadoEl.textContent = 'Validado'
               bloquearBotao(btnEnviar, true, 'Já Validado')
+              marcarPassoPagamento(3)
               return
             }
             mostrarMensagem(comprovativoForm, 'Erro ao registar o comprovativo. Tente novamente.', 'erro')
@@ -1140,6 +1143,7 @@ async function configurarPagamentoEvento(api) {
           mostrarPopup('Comprovativo enviado com sucesso. Aguarde a validação da nossa equipa.', 'sucesso')
           if (estadoEl) estadoEl.textContent = 'Em validação'
           bloquearBotao(btnEnviar, false, 'Enviar Comprovativo')
+          marcarPassoPagamento(3)
         } catch (err) {
           console.error(err)
           mostrarMensagem(comprovativoForm, 'Ocorreu um erro. Tente novamente mais tarde.', 'erro')
@@ -1151,6 +1155,81 @@ async function configurarPagamentoEvento(api) {
 
   } catch (err) {
     console.error('Erro ao carregar estado da inscrição:', err)
+  }
+}
+
+// Página de pagamento: botões "Copiar", nome do ficheiro escolhido e atalho
+// do telemóvel para o passo 2 (muita gente pagava e não enviava o comprovativo).
+function configurarAjudasPagamento() {
+  document.querySelectorAll('.btn-copiar').forEach(botao => {
+    botao.addEventListener('click', async () => {
+      const texto = botao.dataset.copiar
+      try {
+        await navigator.clipboard.writeText(texto)
+      } catch (err) {
+        const campo = document.createElement('textarea')
+        campo.value = texto
+        document.body.appendChild(campo)
+        campo.select()
+        document.execCommand('copy')
+        campo.remove()
+      }
+      botao.textContent = 'Copiado ✓'
+      botao.classList.add('copiado')
+      setTimeout(() => {
+        botao.textContent = 'Copiar'
+        botao.classList.remove('copiado')
+      }, 2000)
+    })
+  })
+
+  const ficheiro = document.getElementById('ficheiroComprovativo')
+  const nomeFicheiro = document.getElementById('nomeFicheiroComprovativo')
+  if (ficheiro && nomeFicheiro) {
+    const textoOriginal = nomeFicheiro.textContent
+    ficheiro.addEventListener('change', () => {
+      const escolhido = ficheiro.files?.[0]
+      nomeFicheiro.textContent = escolhido ? `✓ ${escolhido.name}` : textoOriginal
+      ficheiro.closest('.area-upload')?.classList.toggle('com-ficheiro', !!escolhido)
+      if (escolhido) marcarPassoPagamento(2)
+    })
+  }
+
+  const atalho = document.getElementById('ctaComprovativoMobile')
+  const form = document.getElementById('comprovativoForm')
+  if (atalho && form) {
+    atalho.hidden = false
+    document.body.classList.add('com-cta-mobile')
+    // Quando o formulário já está à vista, o atalho deixa de ser preciso.
+    if ('IntersectionObserver' in window) {
+      new IntersectionObserver(([entrada]) => {
+        atalho.style.visibility = entrada.isIntersecting ? 'hidden' : ''
+      }).observe(form)
+    }
+  }
+}
+
+// Passos da página de pagamento: 1 = pagar, 2 = enviar comprovativo, 3 = comprovativo enviado.
+function marcarPassoPagamento(passo) {
+  const passo1 = document.getElementById('indicadorPasso1')
+  const passo2 = document.getElementById('indicadorPasso2')
+  if (!passo1 || !passo2) return
+  passo1.classList.toggle('ativo', passo === 1)
+  passo1.classList.toggle('concluido', passo > 1)
+  passo2.classList.toggle('ativo', passo === 2)
+  passo2.classList.toggle('concluido', passo > 2)
+
+  if (passo === 3) {
+    const aviso = document.getElementById('avisoComprovativo')
+    if (aviso) {
+      aviso.classList.add('concluido')
+      aviso.innerHTML = '<strong>✓ Comprovativo enviado</strong><span>A equipa USGA vai validar o pagamento e enviar-lhe um email de confirmação.</span>'
+    }
+    const atalho = document.getElementById('ctaComprovativoMobile')
+    if (atalho) {
+      atalho.hidden = true
+      document.body.classList.remove('com-cta-mobile')
+    }
   }
 }
 
