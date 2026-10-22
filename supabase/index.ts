@@ -38,10 +38,24 @@ function formatarData(dataISO: string | null): string {
   return new Date(dataISO).toLocaleDateString('pt-PT', { day: '2-digit', month: 'long', year: 'numeric' })
 }
 
+function dominioEmail(email: string | undefined): string {
+  return String(email || '').split('@')[1]?.trim().toLowerCase() || ''
+}
+
+// O Hotmail/Outlook/Sapo rejeitam ou mandam para o spam emails cujo remetente
+// é de um domínio diferente da conta que autentica no SMTP (ex.: autenticar
+// com @gmail.com e enviar como noreply@outro-dominio). Por isso o "noreply"
+// só é usado quando é do mesmo domínio que smtp_user.
 function obterRemetente(smtp: Record<string, string>): string {
-  const email = smtp.smtp_noreply_email || smtp.smtp_from_email
-  const nome = smtp.smtp_noreply_name || smtp.smtp_from_name
+  const noreplyValido = !!smtp.smtp_noreply_email && dominioEmail(smtp.smtp_noreply_email) === dominioEmail(smtp.smtp_user)
+  const email = noreplyValido ? smtp.smtp_noreply_email : (smtp.smtp_from_email || smtp.smtp_user)
+  const nome = (noreplyValido && smtp.smtp_noreply_name) || smtp.smtp_from_name
   return nome ? `${nome} <${email}>` : email
+}
+
+// As respostas dos sócios vão para o email principal da associação.
+function obterResponderPara(smtp: Record<string, string>): string {
+  return smtp.associacao_email_principal || smtp.smtp_from_email || smtp.smtp_user
 }
 
 async function obterConfigSmtp(supabase: ReturnType<typeof createClient>): Promise<Record<string, string>> {
@@ -66,7 +80,7 @@ async function obterConfigSmtp(supabase: ReturnType<typeof createClient>): Promi
 }
 
 function smtpConfigurado(smtp: Record<string, string>): boolean {
-  return !!(smtp.smtp_host && smtp.smtp_user && smtp.smtp_password && (smtp.smtp_noreply_email || smtp.smtp_from_email))
+  return !!(smtp.smtp_host && smtp.smtp_user && smtp.smtp_password)
 }
 
 async function enviarSmtp(smtp: Record<string, string>, opcoes: { to: string; subject: string; content: string; replyTo?: string }): Promise<void> {
@@ -86,7 +100,7 @@ async function enviarSmtp(smtp: Record<string, string>, opcoes: { to: string; su
     to: opcoes.to,
     subject: opcoes.subject,
     text: opcoes.content,
-    replyTo: opcoes.replyTo || remetente
+    replyTo: opcoes.replyTo || obterResponderPara(smtp)
   })
 }
 
