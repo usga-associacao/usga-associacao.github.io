@@ -1414,7 +1414,14 @@ async function configurarDetalheEvento(api) {
   if (imagem) imagem.classList.toggle('sem-imagem', !evento.imagem_url)
   if (dataEl) dataEl.textContent = api.formatarData(evento.data_evento)
   if (fimInscricoesEl) fimInscricoesEl.textContent = evento.data_fim_inscricoes ? api.formatarData(evento.data_fim_inscricoes) : '-'
-  if (localEl) localEl.textContent = evento.local || '-'
+  if (localEl) {
+    if (evento.local) {
+      const mapa = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(evento.local)}`
+      localEl.innerHTML = `${escapeHtml(evento.local)}<a href="${mapa}" target="_blank" rel="noopener" class="link-mapa">Ver no mapa ↗</a>`
+    } else {
+      localEl.textContent = '-'
+    }
+  }
   const [{ data: provasData }, { data: documentosData }] = await Promise.all([
     api.getProvasEvento(evento.id),
     api.getDocumentosEvento(evento.id)
@@ -1493,6 +1500,7 @@ async function configurarDetalheEvento(api) {
   if (isPagina('evento-futuro.html') && areaInscricao) {
     if (evento.estado === 'aberto') {
       areaInscricao.innerHTML = `<a href="inscricao-evento.html?evento=${encodeURIComponent(evento.slug)}" class="btn btn-primary">Inscrever-me</a>`
+      mostrarBarraInscricaoMobile(evento, provas, unidade, api)
     } else if (evento.estado === 'brevemente') {
       areaInscricao.innerHTML = `<div style="padding:10px;background:#fff;border-radius:6px;color:#666;">Inscrições brevemente disponíveis</div>`
     } else {
@@ -1513,6 +1521,26 @@ async function configurarDetalheEvento(api) {
       }
     }
   }
+}
+
+// Barra fixa no fundo do ecrã (só telemóvel, ver CSS) com o botão de inscrição,
+// para não ser preciso voltar à barra lateral depois de ler a página.
+function mostrarBarraInscricaoMobile(evento, provas, unidade, api) {
+  if (document.querySelector('.cta-inscricao-mobile')) return
+  const valores = provas.map(p => Number(p.valor) || 0)
+  const contribuicao = valores.length
+    ? (valores.length > 1 ? 'desde ' : '') + api.formatarContribuicao(Math.min(...valores), unidade)
+    : ''
+  const barra = document.createElement('div')
+  barra.className = 'cta-inscricao-mobile'
+  barra.innerHTML = `
+    <div class="cta-inscricao-texto">
+      <strong>${escapeHtml(evento.titulo)}</strong>
+      ${contribuicao ? `<small>${escapeHtml(contribuicao)}</small>` : ''}
+    </div>
+    <a href="inscricao-evento.html?evento=${encodeURIComponent(evento.slug)}" class="btn btn-primary">Inscrever-me</a>`
+  document.body.appendChild(barra)
+  document.body.classList.add('com-cta-mobile')
 }
 
 // Agrupa documentos por prova ("Geral" primeiro, depois pela ordem das provas).

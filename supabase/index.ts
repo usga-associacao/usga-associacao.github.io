@@ -25,6 +25,40 @@ function preencherTemplate(texto: string, dados: Record<string, string>): string
   return texto.replace(/\{\{(\w+)\}\}/g, (match, chave) => dados[chave] ?? match)
 }
 
+const SITE_URL = 'https://usga-associacao.github.io'
+
+function escaparHtml(texto: string): string {
+  return texto.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;')
+}
+
+// Versão HTML do email: o mesmo texto (dos modelos editáveis no admin) com o
+// logótipo, links clicáveis e o rodapé da associação. O texto simples continua
+// a ser enviado em paralelo para quem não vê HTML.
+function construirHtmlEmail(texto: string): string {
+  const corpo = escaparHtml(texto)
+    .replace(/(https?:\/\/[^\s<]+[^\s<.,;:!?)])/g, '<a href="$1" style="color:#4F8A34;font-weight:bold;word-break:break-all;">$1</a>')
+    .replace(/\n/g, '<br>')
+  return `<!doctype html>
+<html lang="pt">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"></head>
+<body style="margin:0;padding:0;background:#F6F9F3;">
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#F6F9F3;padding:24px 12px;">
+<tr><td align="center">
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:560px;background:#ffffff;border-radius:14px;overflow:hidden;font-family:Arial,Helvetica,sans-serif;">
+<tr><td align="center" style="padding:24px 24px 18px;border-bottom:4px solid #4F8A34;">
+<img src="${SITE_URL}/images/logo-cabecalho.png" width="140" alt="USGA - Unidos por São Gens Ativo" style="display:block;width:140px;height:auto;border:0;">
+</td></tr>
+<tr><td style="padding:28px 28px 26px;font-size:15px;line-height:1.6;color:#333333;">${corpo}</td></tr>
+<tr><td style="padding:18px 28px;background:#1a1a1a;color:#bbbbbb;font-size:12px;line-height:1.6;text-align:center;">
+${escaparHtml(NOME_CLUBE)}<br><a href="${SITE_URL}" style="color:#ffffff;">usga-associacao.github.io</a>
+</td></tr>
+</table>
+</td></tr>
+</table>
+</body>
+</html>`
+}
+
 // Contribuição com o texto definido no evento (ex: "5 pedaladas"), nunca em euros.
 function formatarContribuicao(valor: number | null, unidade: string | null): string {
   if (valor == null) return '-'
@@ -100,6 +134,7 @@ async function enviarSmtp(smtp: Record<string, string>, opcoes: { to: string; su
     to: opcoes.to,
     subject: opcoes.subject,
     text: opcoes.content,
+    html: construirHtmlEmail(opcoes.content),
     replyTo: opcoes.replyTo || obterResponderPara(smtp)
   })
 }
