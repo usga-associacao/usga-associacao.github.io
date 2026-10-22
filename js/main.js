@@ -861,7 +861,9 @@ async function configurarInscricaoEvento(api) {
       return
     }
 
-    // O email "pendente" é enviado pelo trigger inscricoes_evento_email_pendente.
+    // Um só email para o contacto; a função enviar-email junta a lista do grupo.
+    api.dispararEmailInscricao(data.inscricao_id, 'pendente')
+
     const pagamentoToken = data.pagamento_token || data.public_token
 
     sessionStorage.setItem('usga_inscricao_evento_id', data.inscricao_id)

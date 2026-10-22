@@ -31,6 +31,12 @@ Migracoes:
   grupo (`criar_inscricao_grupo`, ate 5 participantes com um so pagamento).
 - `20261022_emails_grupo.sql` — os triggers de email passam a enviar um so email por grupo.
 
+**Emails de inscricao:** sao enviados pelo site (`js/main.js` e `admin.html` chamam a
+Edge Function `enviar-email`). Os triggers `inscricoes_evento_email_*` existem mas estao
+inativos, porque `edge_function_url_base` / `edge_function_service_key` nao estao
+configurados (aparece um aviso nos logs da base de dados). Se um dia forem configurados,
+retirar as chamadas do site para nao haver emails duplicados.
+
 Isto cria as tabelas principais:
 
 - `utilizadores`

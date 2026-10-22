@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=0.75">
     <title>Back-office - USGA</title>
-    <link rel="stylesheet" href="css/style.css?v=20261021">
+    <link rel="stylesheet" href="css/style.css?v=20261022">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap" rel="stylesheet">
@@ -658,7 +658,7 @@
         </div>
     </footer>
 
-    <script src="js/main.js?v=20261021"></script>
+    <script src="js/main.js?v=20261022"></script>
     <script type="module">
         import {
             requireAdmin, supabase,
@@ -1615,7 +1615,7 @@
                         const dorsal = document.getElementById(`d_${i.id}`).value.trim() || null
                         const { error: errConfirm } = await atualizarInscricaoEvento(i.id, { pagamento_estado:'validado', estado:'confirmada', dorsal, data_confirmacao: new Date().toISOString() })
                         if (errConfirm) { alert('Erro ao confirmar: ' + errConfirm.message); return }
-                        // O email de confirmação é enviado pelo trigger inscricoes_evento_email_confirmada.
+                        supabase.functions.invoke('enviar-email', { body: { categoria: 'inscricao', tipo: 'confirmada', inscricao_id: i.id } }).catch(() => {})
                         carregarInscricoes()
                     }))
                     td.appendChild(btnAcao('Reenviar Email', 'normal', async (ev) => {
@@ -2331,10 +2331,25 @@
                 }
                 if (p.estado === 'pendente' || p.estado === 'em_validacao') {
                     td.appendChild(btnAprovar('Validar', async () => {
-                        // Valida o pagamento e confirma todas as inscrições do grupo; os emails
-                        // de confirmação são enviados pelo trigger inscricoes_evento_email_confirmada.
+                        // Valida o pagamento e confirma todas as inscrições do grupo
                         const { error: errValidar } = await validarPagamento(p.id)
                         if (errValidar) { alert('Erro ao validar: ' + errValidar.message); return }
+                        if (p.tipo === 'evento' && p.inscricao_evento_id) {
+                            // Um email de confirmação por endereço: o titular (contacto) recebe a lista
+                            // do grupo; quem indicou um email próprio recebe também o seu.
+                            const { data: grupo } = await supabase.from('inscricoes_evento')
+                                .select('id, email')
+                                .eq('pagamento_id', p.id)
+                                .order('data_inscricao', { ascending: true })
+                            const destinos = new Map([[String(inscricao?.email || '').toLowerCase(), p.inscricao_evento_id]])
+                            ;(grupo || []).forEach(g => {
+                                const chave = String(g.email || '').toLowerCase()
+                                if (!destinos.has(chave)) destinos.set(chave, g.id)
+                            })
+                            destinos.forEach(inscricaoId => {
+                                supabase.functions.invoke('enviar-email', { body: { categoria: 'inscricao', tipo: 'confirmada', inscricao_id: inscricaoId } }).catch(() => {})
+                            })
+                        }
                         carregarPagamentos()
                     }))
                     td.appendChild(btnAcao('Rejeitar', 'danger', async () => {
