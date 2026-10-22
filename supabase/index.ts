@@ -25,9 +25,12 @@ function preencherTemplate(texto: string, dados: Record<string, string>): string
   return texto.replace(/\{\{(\w+)\}\}/g, (match, chave) => dados[chave] ?? match)
 }
 
-function formatarMoeda(valor: number | null): string {
+// Contribuição com o texto definido no evento (ex: "5 pedaladas"), nunca em euros.
+function formatarContribuicao(valor: number | null, unidade: string | null): string {
   if (valor == null) return '-'
-  return new Intl.NumberFormat('pt-PT', { style: 'currency', currency: 'EUR' }).format(valor)
+  const numero = new Intl.NumberFormat('pt-PT', { minimumFractionDigits: 0, maximumFractionDigits: 2 }).format(valor)
+  const texto = (unidade || '').trim()
+  return texto ? `${numero} ${texto}` : numero
 }
 
 function formatarData(dataISO: string | null): string {
@@ -99,7 +102,7 @@ async function processarInscricao(supabase: ReturnType<typeof createClient>, bod
 
   const { data: inscricao, error: inscricaoErr } = await supabase
     .from('inscricoes_evento')
-    .select('nome, email, dorsal, public_token, eventos(titulo, data_evento, local, preco)')
+    .select('nome, email, dorsal, public_token, pagamento_id, evento_provas(nome), eventos(titulo, data_evento, local, preco, contribuicao_unidade)')
     .eq('id', inscricaoId)
     .single()
 
@@ -108,13 +111,25 @@ async function processarInscricao(supabase: ReturnType<typeof createClient>, bod
     return jsonResponse({ ok: false, error: 'Inscrição não encontrada' })
   }
 
-  const { data: pagamento } = await supabase
-    .from('pagamentos')
-    .select('public_token')
-    .eq('inscricao_evento_id', inscricaoId)
-    .maybeSingle()
+  // Numa inscrição de grupo o pagamento é partilhado; só o titular tem inscricao_evento_id.
+  const { data: pagamento } = inscricao.pagamento_id
+    ? await supabase.from('pagamentos').select('public_token, valor').eq('id', inscricao.pagamento_id).maybeSingle()
+    : await supabase.from('pagamentos').select('public_token, valor').eq('inscricao_evento_id', inscricaoId).maybeSingle()
 
-  const evento = inscricao.eventos as { titulo?: string; data_evento?: string; local?: string; preco?: number } | null
+  const { data: grupo } = inscricao.pagamento_id
+    ? await supabase
+        .from('inscricoes_evento')
+        .select('nome, dorsal, estado, evento_provas(nome)')
+        .eq('pagamento_id', inscricao.pagamento_id)
+        .order('data_inscricao', { ascending: true })
+    : { data: null }
+
+  const evento = inscricao.eventos as { titulo?: string; data_evento?: string; local?: string; preco?: number; contribuicao_unidade?: string } | null
+  const prova = inscricao.evento_provas as { nome?: string } | null
+  const participantes = (grupo || []) as { nome: string; dorsal: string | null; estado: string; evento_provas: { nome?: string } | null }[]
+  const listaParticipantes = participantes
+    .map(p => `- ${p.nome}${p.evento_provas?.nome ? ` (${p.evento_provas.nome})` : ''}${tipo === 'confirmada' && p.dorsal ? ` - dorsal ${p.dorsal}` : ''}`)
+    .join('\n')
 
   const dadosTemplate: Record<string, string> = {
     nome: inscricao.nome || '',
@@ -122,7 +137,9 @@ async function processarInscricao(supabase: ReturnType<typeof createClient>, bod
     evento: evento?.titulo || '',
     data_evento: formatarData(evento?.data_evento ?? null),
     local: evento?.local || '-',
-    valor: formatarMoeda(evento?.preco ?? null),
+    valor: formatarContribuicao(pagamento?.valor ?? evento?.preco ?? null, evento?.contribuicao_unidade ?? null),
+    prova: prova?.nome || '-',
+    participantes: listaParticipantes || inscricao.nome || '',
     dorsal: inscricao.dorsal || '-',
     link_estado: inscricao.public_token ? `https://usga-associacao.github.io/estado-inscricao.html?token=${inscricao.public_token}` : 'https://usga-associacao.github.io/estado-inscricao.html',
     link_pagamento: pagamento?.public_token ? `https://usga-associacao.github.io/pagamento-evento.html?token=${pagamento.public_token}` : 'https://usga-associacao.github.io/estado-inscricao.html'
@@ -141,7 +158,11 @@ async function processarInscricao(supabase: ReturnType<typeof createClient>, bod
   const corpoTemplate = mapaConfig[chaveCorpo] || (tipo === 'rejeitada' ? 'Olá {{nome}}, lamentamos informar que a sua inscrição em {{evento}} não foi aceite. Se tiver dúvidas, contacte-nos através da página de suporte.' : 'Olá {{nome}}, a sua inscrição em {{evento}} foi atualizada. Pode consultar o estado da sua inscrição aqui: {{link_estado}}')
 
   const assunto = preencherTemplate(assuntoTemplate, dadosTemplate)
-  const corpo = preencherTemplate(corpoTemplate, dadosTemplate)
+  let corpo = preencherTemplate(corpoTemplate, dadosTemplate)
+  // Templates antigos não têm {{participantes}}: num grupo, a lista é acrescentada no fim.
+  if (participantes.length > 1 && !corpoTemplate.includes('{{participantes}}')) {
+    corpo += `\n\nParticipantes desta inscrição:\n${listaParticipantes}`
+  }
 
   const smtp = await obterConfigSmtp(supabase)
   if (!smtpConfigurado(smtp)) {

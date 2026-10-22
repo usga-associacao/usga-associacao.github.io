@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=0.75">
     <title>Detalhe Histórico - USGA</title>
-    <link rel="stylesheet" href="css/style.css?v=20260825">
+    <link rel="stylesheet" href="css/style.css?v=20261021">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap" rel="stylesheet">
@@ -64,7 +64,7 @@
 
                         <div id="infoAdicionalBox" style="display:none; margin-top: 30px;">
                             <h3>Informação Adicional</h3>
-                            <ul id="listaInfoAdicional" style="list-style:none; padding:0; margin-top:10px;"></ul>
+                            <div id="listaInfoAdicional" style="margin-top:10px;"></div>
                         </div>
                     </div>
 
@@ -78,7 +78,11 @@
                                 <span class="sidebar-label">Local</span>
                                 <span class="sidebar-value" id="localEvento">-</span>
                             </div>
-                            
+                            <div class="sidebar-item" id="provasSidebarItem" style="display:none;">
+                                <span class="sidebar-label">Provas</span>
+                                <span class="sidebar-value" id="provasEvento">-</span>
+                            </div>
+
                             <div style="margin-top: 20px; padding: 15px; background: #eee; border-radius: 4px; text-align: center; font-size: 14px; font-weight: bold; color: #666;">
                                 Evento Realizado
                             </div>
@@ -91,48 +95,9 @@
                 </div>
 
                 <div class="participants-section">
-                    <h2 style="margin-bottom: 20px;">Classificação Final</h2>
-
-                    <div class="stats-container" id="statsContainer" style="grid-template-columns: repeat(4, 1fr);">
-                        <div class="stat-box">
-                            <span class="stat-number" id="statAtletas">0</span>
-                            <span class="stat-label">Atletas</span>
-                        </div>
-                        <div class="stat-box">
-                            <span class="stat-number" id="statMelhorTempo" style="color: #2e7d32;">-</span>
-                            <span class="stat-label">Melhor Tempo</span>
-                        </div>
-                        <div class="stat-box">
-                            <span class="stat-number" id="statTempoMedio" style="color: #1565c0;">-</span>
-                            <span class="stat-label">Tempo Médio</span>
-                        </div>
-                        <div class="stat-box">
-                            <span class="stat-number" id="statDistancia">-</span>
-                            <span class="stat-label">Distância</span>
-                        </div>
-                    </div>
-
-                    <div class="hero-search-wrapper" style="margin-top: 0; margin-bottom: 30px; max-width: 100%;">
-                        <input type="text" id="tableSearch" class="hero-search-input" placeholder="Pesquisar atleta..." style="background-color: #fff; border: 1px solid #e5e5e5; box-shadow: none;">
-                    </div>
-
-                    <div class="participants-table-wrapper">
-                        <table class="participants-table" id="participantsTable">
-                            <thead>
-                                <tr>
-                                    <th style="width: 60px;">Pos.</th>
-                                    <th style="width: 60px;">Nac.</th>
-                                    <th>Dorsal</th>
-                                    <th>Nome</th>
-                                    <th>Equipa</th>
-                                    <th>Tempo</th>
-                                    <th>Diferença</th>
-                                </tr>
-                            </thead>
-                            <tbody id="tabelaClassificacao" style="font-family: 'Courier New', Courier, monospace; font-size: 13px;">
-                                <tr><td colspan="7" style="text-align:center; color:#999; font-family: var(--font-main);">A carregar classificação...</td></tr>
-                            </tbody>
-                        </table>
+                    <h2 style="margin-bottom: 20px;">Resultados e Documentos</h2>
+                    <div id="listaResultados">
+                        <p style="color:#999;">A carregar...</p>
                     </div>
                 </div>
 
@@ -146,16 +111,6 @@
         </div>
     </footer>
 
-    <script>
-        document.getElementById('tableSearch').addEventListener('keyup', function() {
-            let input = this.value.toLowerCase();
-            let rows = document.querySelectorAll('#participantsTable tbody tr');
-            rows.forEach(row => {
-                let text = row.innerText.toLowerCase();
-                row.style.display = text.includes(input) ? '' : 'none';
-            });
-        });
-    </script>
-    <script src="js/main.js?v=20260825"></script>
+    <script src="js/main.js?v=20261021"></script>
 </body>
 </html>

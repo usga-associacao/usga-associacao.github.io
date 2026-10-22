@@ -16,8 +16,20 @@ Opcionalmente, executar depois o `seed.sql` para criar os eventos de exemplo que
 Para um projeto Supabase que ja tinha a versao anterior instalada:
 
 1. Abrir `SQL Editor`.
-2. Executar `migration_20260720_payment_proofs.sql`.
+2. Executar, por ordem de data, os ficheiros de `migrations/` que ainda nao foram aplicados.
 3. Nao executar `schema.sql` por cima de uma base ja em uso, a menos que esteja a recriar tudo do zero.
+
+**Atencao:** `schema.sql` esta desatualizado em relacao a base de dados em producao
+(faltam, por exemplo, as tabelas `configuracoes` e `logs_email`, os triggers de email e
+varias colunas acrescentadas pelo dashboard). As migracoes em `migrations/` foram escritas
+a partir da estrutura real de producao, nao a partir de `schema.sql`.
+
+Migracoes:
+
+- `20261021_provas_documentos_grupos.sql` — provas por evento (`evento_provas`), documentos
+  de informacao e resultados (`evento_documentos`), texto da contribuicao, inscricao de
+  grupo (`criar_inscricao_grupo`, ate 5 participantes com um so pagamento).
+- `20261022_emails_grupo.sql` — os triggers de email passam a enviar um so email por grupo.
 
 Isto cria as tabelas principais:
 

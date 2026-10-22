@@ -155,6 +155,26 @@ export async function getEvento(idOuSlug) {
   return { data, error }
 }
 
+export async function getProvasEvento(eventoId) {
+  const { data, error } = await supabase
+    .from('evento_provas')
+    .select('*')
+    .eq('evento_id', eventoId)
+    .order('ordem', { ascending: true })
+    .order('created_at', { ascending: true })
+  return { data, error }
+}
+
+// seccao: 'informacao' (antes do evento) ou 'resultados' (depois do evento)
+export async function getDocumentosEvento(eventoId) {
+  const { data, error } = await supabase
+    .from('evento_documentos')
+    .select('*')
+    .eq('evento_id', eventoId)
+    .order('ordem', { ascending: true })
+  return { data, error }
+}
+
 // Inscricoes -----------------------------------------------------------------
 
 // Usa o novo RPC que cria inscrição + pagamento numa só operação
@@ -178,6 +198,28 @@ export async function criarInscricaoEvento(dados) {
   return { data, error }
 }
 
+// Inscrição de 1 a 5 participantes com um único pagamento.
+// dados.participantes: [{ nome, data_nascimento, sexo, pais, localidade, equipa,
+//   bi, tamanho_tshirt, email, telefone, provas: [prova_id, ...] }]
+export async function criarInscricaoGrupo(dados) {
+  const { data, error } = await supabase.rpc('criar_inscricao_grupo', {
+    p_evento_id:     dados.evento_id,
+    p_email:         dados.email,
+    p_telefone:      dados.telefone      ?? null,
+    p_nif:           dados.nif           ?? null,
+    p_pedido_fatura: dados.pedido_fatura ?? false,
+    p_participantes: dados.participantes
+  })
+  return { data, error }
+}
+
+// Aceita o token do pagamento ou o token de qualquer inscrição do grupo.
+export async function getParticipantesGrupo(token) {
+  const { data, error } = await supabase
+    .rpc('get_participantes_grupo', { p_token: token })
+  return { data, error }
+}
+
 export function dispararEmailInscricao(inscricaoId, tipo) {
   supabase.functions.invoke('enviar-email', { body: { categoria: 'inscricao', tipo, inscricao_id: inscricaoId } }).catch(() => {})
 }
@@ -185,7 +227,7 @@ export function dispararEmailInscricao(inscricaoId, tipo) {
 export async function getMinhasInscricoes(utilizadorId) {
   const { data, error } = await supabase
     .from('inscricoes_evento')
-    .select('*, eventos(*)')
+    .select('*, eventos(*), evento_provas(nome)')
     .eq('utilizador_id', utilizadorId)
     .order('data_inscricao', { ascending: false })
   return { data, error }
@@ -204,7 +246,7 @@ export async function getInscricaoEvento(utilizadorId, eventoId) {
 export async function getInscritosConfirmados(eventoId) {
   const { data, error } = await supabase
     .from('inscritos_publicos')
-    .select('nome, pais, equipa, dorsal, data_confirmacao, data_inscricao, estado_publico')
+    .select('nome, pais, equipa, dorsal, data_confirmacao, data_inscricao, estado_publico, prova_id, prova_nome')
     .eq('evento_id', eventoId)
     .order('data_confirmacao', { ascending: true, nullsFirst: false })
     .order('data_inscricao', { ascending: true })
@@ -546,13 +588,15 @@ export function formatarMoeda(valor) {
   }).format(Number(valor || 0))
 }
 
-export function formatarContribuicao(valor) {
+// Mostra a contribuição com o texto definido no evento (ex: "5 pedaladas"),
+// nunca em euros. Devolve texto simples (usar com textContent).
+export function formatarContribuicao(valor, unidade) {
   const numero = new Intl.NumberFormat('pt-PT', {
-    minimumFractionDigits: 2,
+    minimumFractionDigits: 0,
     maximumFractionDigits: 2
   }).format(Number(valor || 0))
-  const icone = '<svg width="16" height="16" viewBox="0 0 24 24" fill="#000000" xmlns="http://www.w3.org/2000/svg" style="display:inline-block;vertical-align:-2px;margin-left:4px;"><path d="M13.49 5.48c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm-3.6 13.9l1-4.4 2.1 2v6h2v-7.5l-2.1-2 .6-3c1.3 1.5 3.3 2.5 5.5 2.5v-2c-1.9 0-3.5-1-4.3-2.4l-1-1.6c-.4-.6-1-1-1.7-1-.3 0-.5.1-.8.1l-5.2 2.2v4.7h2v-3.4l1.8-.7-1.6 8.1-4.9-1-.4 2 7 1.4z"/></svg>'
-  return `${numero}${icone}`
+  const texto = (unidade || '').trim()
+  return texto ? `${numero} ${texto}` : numero
 }
 
 function pareceUuid(valor) {
