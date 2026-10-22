@@ -172,6 +172,7 @@ document.addEventListener('DOMContentLoaded', async function () {
 
   // Populate public events listing when on eventos.html
   configurarListaEventos(api)
+  configurarProximosEventosHome(api)
   configurarTodosEventos(api)
 
   // Populate event detail pages (futuro / passado)
@@ -1319,24 +1320,55 @@ async function configurarListaEventos(api) {
   }
 }
 
+const ESTADOS_CARTAO = {
+  aberto: { texto: 'Inscrições abertas', classe: 'estado-aberto' },
+  brevemente: { texto: 'Brevemente', classe: 'estado-brevemente' },
+  fechado: { texto: 'Inscrições fechadas', classe: 'estado-fechado' },
+  cancelado: { texto: 'Cancelado', classe: 'estado-cancelado' }
+}
+
 function renderCardEvento(ev, destino) {
   const imagem = ev.imagem_url || ''
   const dataFmt = ev.data_evento ? new Date(ev.data_evento).toLocaleDateString('pt-PT', { day:'2-digit', month:'short', year:'numeric' }) : ''
   const dataBadge = ev.data_evento ? new Date(ev.data_evento).toLocaleDateString('pt-PT', { day:'2-digit', month:'short' }).toUpperCase() : ''
   const slug = ev.slug || ''
   const pagina = destino || 'evento-futuro.html'
+  // O estado só interessa nos eventos que ainda vão acontecer.
+  const estado = pagina === 'evento-futuro.html' ? ESTADOS_CARTAO[ev.estado] : null
   return `
     <a href="${pagina}?evento=${encodeURIComponent(slug)}" class="project-card">
-      <div class="project-image" style="background-image: url('${imagem}');">
+      <div class="project-image${imagem ? '' : ' sem-imagem'}"${imagem ? ` style="background-image: url('${escapeHtml(imagem)}');"` : ''}>
         ${dataBadge ? `<span class="project-date-badge">${dataBadge}</span>` : ''}
+        ${estado ? `<span class="project-estado-badge ${estado.classe}">${estado.texto}</span>` : ''}
       </div>
       <div class="project-info">
-        <h3>${ev.titulo || ''}</h3>
+        <h3>${escapeHtml(ev.titulo)}</h3>
         <small style="color:#777;">${dataFmt}</small>
-        <p style="margin-top:8px;color:#555;">${(ev.descricao_curta || '').slice(0,120)}</p>
+        <p style="margin-top:8px;color:#555;">${escapeHtml((ev.descricao_curta || '').slice(0,120))}</p>
       </div>
     </a>
   `
+}
+
+// Página inicial: os 3 próximos eventos (sem os cancelados).
+async function configurarProximosEventosHome(api) {
+  const lista = document.getElementById('proximosEventosHome')
+  if (!lista || !api) return
+
+  const { data, error } = await api.getEventosFuturos()
+  const proximos = (data || []).filter(ev => ev.estado !== 'cancelado').slice(0, 3)
+
+  if (error || proximos.length === 0) {
+    lista.classList.remove('projects-grid-3')
+    lista.innerHTML = `
+      <div class="proximos-eventos-vazio">
+        <p><strong>Novos eventos em breve.</strong></p>
+        <p>Acompanhe as novidades no nosso <a href="https://www.facebook.com/share/1Bium9wSUh/?mibextid=wwXIfr" target="_blank" rel="noopener">Facebook</a> e <a href="https://www.instagram.com/usga_associacao?igsh=cmhpNHltaDZwd2dt" target="_blank" rel="noopener">Instagram</a>.</p>
+      </div>`
+    return
+  }
+
+  lista.innerHTML = proximos.map(ev => renderCardEvento(ev, 'evento-futuro.html')).join('')
 }
 
 // Populate event detail pages (futuro / passado)
@@ -1379,6 +1411,7 @@ async function configurarDetalheEvento(api) {
     }
   }
   if (imagem) imagem.style.backgroundImage = evento.imagem_url ? `url('${evento.imagem_url}')` : ''
+  if (imagem) imagem.classList.toggle('sem-imagem', !evento.imagem_url)
   if (dataEl) dataEl.textContent = api.formatarData(evento.data_evento)
   if (fimInscricoesEl) fimInscricoesEl.textContent = evento.data_fim_inscricoes ? api.formatarData(evento.data_fim_inscricoes) : '-'
   if (localEl) localEl.textContent = evento.local || '-'
