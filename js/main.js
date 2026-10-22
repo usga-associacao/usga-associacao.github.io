@@ -862,7 +862,13 @@ async function configurarInscricaoEvento(api) {
     }
 
     // Um só email para o contacto; a função enviar-email junta a lista do grupo.
-    api.dispararEmailInscricao(data.inscricao_id, 'pendente')
+    // Espera pelo envio (no máximo 8 s) antes de mudar para a página de pagamento:
+    // se a página mudar logo, o browser cancela o pedido e o email não é enviado.
+    bloquearBotao(submitBtn, true, 'A enviar email de confirmação...')
+    await Promise.race([
+      api.dispararEmailInscricao(data.inscricao_id, 'pendente'),
+      new Promise(resolve => setTimeout(resolve, 8000))
+    ])
 
     const pagamentoToken = data.pagamento_token || data.public_token
 
