@@ -15,7 +15,7 @@
     <meta property="og:image:height" content="630">
     <meta property="og:locale" content="pt_PT">
     <meta name="twitter:card" content="summary_large_image">
-    <link rel="stylesheet" href="css/style.css?v=20261029">
+    <link rel="stylesheet" href="css/style.css?v=20261030">
 </head>
 <body class="home-page">
 
@@ -34,97 +34,128 @@
     </header>
 
     <main>
-        <section class="hero-bg-slideshow">
+        <section class="hero-bg-slideshow hero-compacto">
             <div class="slideshow-container">
                 <div class="slideshow-image"></div>
                 <div class="slideshow-image"></div>
                 <div class="slideshow-image"></div>
             </div>
-            
+
             <div class="hero-overlay-dark"></div>
 
             <div class="container hero-container">
                 <div class="hero-content">
                     <span class="subtitle">BEM-VINDO À FAMÍLIA</span>
                     <h1>Pagamento de Quota</h1>
-                    <p>Para regularizar a sua quota de sócio, proceda ao pagamento e carregue o comprovativo abaixo.</p>
+                    <p>Pague a quota e envie o comprovativo nesta página.</p>
                 </div>
             </div>
         </section>
 
-        <section class="contact-section">
-            <div class="container" style="max-width: 600px; text-align: center;">
+        <section class="pagamento-seccao">
+            <div class="container pagamento-container">
 
-                <div style="background: #fee2e2; border: 1px solid #fca5a5; padding: 16px 20px; border-radius: 8px; font-size: 14px; text-align: left; margin-bottom: 20px;">
-                    <p><strong>📧 Poderá receber emails nossos sobre o estado da sua conta ou quota.</strong></p>
-                    <p style="margin-top: 6px;">Se não os encontrar na caixa de entrada, verifique por favor as pastas de <strong>Spam</strong> ou <strong>Lixo Eletrónico</strong>.</p>
+                <!-- Indicador dos 2 passos; atualizado por js/main.js (marcarPassoPagamento) -->
+                <ol class="passos-pagamento" id="passosPagamento">
+                    <li class="passo-indicador ativo" id="indicadorPasso1"><span>1</span> Pagar</li>
+                    <li class="passo-indicador" id="indicadorPasso2"><span>2</span> Enviar comprovativo</li>
+                </ol>
+
+                <div class="aviso-comprovativo" id="avisoComprovativo">
+                    <strong>⚠️ A quota só fica regularizada depois de enviar o comprovativo</strong>
+                    <span>Depois de pagar, volte a esta página e envie o comprovativo no passo 2.</span>
                 </div>
 
-                <div class="payment-box" style="background: #fff; border: 1px solid var(--primary-color); padding: 30px; border-radius: 8px; margin-bottom: 20px;">
-                    <span style="display: block; font-size: 14px; text-transform: uppercase; color: #888; margin-bottom: 10px; font-weight: 700;">Transferência Bancária (IBAN)</span>
-                    <p style="font-size: 24px; font-weight: 700; color: var(--primary-color); letter-spacing: 1px; margin-bottom: 5px;">PT50 0018 0003 6860 6912 0201 4</p>
-                    <p style="font-size: 14px; color: #666;">Titular: Unidos por São Gens Ativo</p>
-                </div>
-
-                <div class="payment-box" style="background: #fff; border: 1px solid var(--primary-color); padding: 30px; border-radius: 8px; margin-bottom: 30px;">
-                    <span style="display: block; font-size: 14px; text-transform: uppercase; color: #888; margin-bottom: 10px; font-weight: 700;">MB WAY</span>
-                    <p style="font-size: 28px; font-weight: 700; color: var(--primary-color); letter-spacing: 1px; margin-bottom: 5px;">+ 351 937 083 440</p>
-                    <p style="font-size: 14px; color: #666;">Envie o valor através da app MB WAY para este número</p>
-                </div>
-
-                <div class="payment-box" style="background: #fff; border: 1px solid var(--primary-color); padding: 30px; border-radius: 8px; margin-bottom: 30px;">
-                    <div style="display: flex; justify-content: space-between;">
-                        <span id="labelQuota">Quota Anual:</span>
-                        <span id="valorQuota" style="font-weight: 700;">A carregar...</span>
-                    </div>
-                    <div style="display: flex; justify-content: space-between; margin-top: 10px;">
-                        <span>Nome:</span>
-                        <span id="nomeSocio" style="font-weight: 700;">-</span>
-                    </div>
-                    <div style="display: flex; justify-content: space-between; margin-top: 10px;">
-                        <span>NIF:</span>
-                        <span id="nifSocio" style="font-weight: 700;">-</span>
-                    </div>
-                </div>
-
-                <div class="instructions" style="background: var(--bg-light); padding: 20px; border-radius: 8px; font-size: 14px; text-align: left;">
-                    <p><strong>Importante:</strong></p>
-                    <p>Carregue o comprovativo nesta página para que a equipa possa validar a quota no back-office.</p>
-                    <p style="margin-top: 10px;">Na descrição da transferência indique o seu <strong id="referenciaQuota">Nome + NIF</strong>.</p>
-                </div>
-
-                <form id="comprovativoQuotaForm" class="contact-form" style="margin-top: 20px; text-align: left; display:none;">
-                    <div id="mensagemComprovativoQuota" style="display:none; padding: 12px 16px; border-radius: 8px; margin-bottom: 20px; font-size: 14px;"></div>
-                    <div class="form-group">
-                        <label>Método de pagamento utilizado *</label>
-                        <div style="display:flex; gap:24px; margin-top:8px;">
-                            <label style="display:flex; align-items:center; gap:8px; font-weight:400; font-size:14px;">
-                                <input type="radio" name="metodoPagamentoQuota" value="transferencia" required style="width:auto;"> Transferência Bancária
-                            </label>
-                            <label style="display:flex; align-items:center; gap:8px; font-weight:400; font-size:14px;">
-                                <input type="radio" name="metodoPagamentoQuota" value="mbway" style="width:auto;"> MB WAY
-                            </label>
+                <div class="pagamento-grelha">
+                    <div class="pagamento-coluna">
+                        <div class="resumo-pagamento">
+                            <div class="resumo-linha resumo-valor">
+                                <span id="labelQuota">Quota anual</span>
+                                <strong id="valorQuota">A carregar...</strong>
+                            </div>
+                            <div class="resumo-linha">
+                                <span>Nome</span>
+                                <strong id="nomeSocio">-</strong>
+                            </div>
+                            <div class="resumo-linha">
+                                <span>NIF</span>
+                                <strong id="nifSocio">-</strong>
+                            </div>
                         </div>
-                    </div>
-                    <div class="form-group" id="grupoTelefoneMbwayQuota" style="display:none;">
-                        <label for="telefoneMbwayQuota">Nº de Telemóvel que utilizou para efetuar o pagamento</label>
-                        <input type="tel" id="telefoneMbwayQuota" name="telefoneMbwayQuota" placeholder="9XX XXX XXX">
-                    </div>
-                    <div class="form-group">
-                        <label for="referenciaPagamentoQuota">Descrição usada na transferência</label>
-                        <input type="text" id="referenciaPagamentoQuota" name="referenciaPagamentoQuota" placeholder="Ex: Nome + NIF">
-                    </div>
-                    <div class="form-group">
-                        <label for="ficheiroComprovativoQuota">Comprovativo</label>
-                        <input type="file" id="ficheiroComprovativoQuota" name="ficheiroComprovativoQuota" accept="image/jpeg,image/png,image/webp,image/heic,image/heif,application/pdf" required>
-                    </div>
-                    <button type="submit" id="btnEnviarComprovativoQuota" class="btn btn-primary" style="width: 100%;">Enviar Comprovativo</button>
-                </form>
 
-                <a href="index.html" class="btn btn-primary" style="margin-top: 40px;">Voltar à Página Inicial</a>
+                        <h2 class="titulo-passo"><span>1</span> Pagar</h2>
+                        <div class="metodos-pagamento">
+                            <div class="metodo-pagamento">
+                                <span class="metodo-titulo">Transferência bancária (IBAN)</span>
+                                <div class="metodo-valor">
+                                    <span>PT50 0018 0003 6860 6912 0201 4</span>
+                                    <button type="button" class="btn-copiar" data-copiar="PT50001800036860691202014">Copiar</button>
+                                </div>
+                                <small>Titular: Unidos por São Gens Ativo</small>
+                            </div>
+                            <div class="metodo-pagamento">
+                                <span class="metodo-titulo">MB WAY</span>
+                                <div class="metodo-valor">
+                                    <span>+351 937 083 440</span>
+                                    <button type="button" class="btn-copiar" data-copiar="937083440">Copiar</button>
+                                </div>
+                                <small>Envie o valor pela app MB WAY para este número.</small>
+                            </div>
+                        </div>
+                        <p class="nota-referencia">Na descrição da transferência indique: <strong id="referenciaQuota">Nome + NIF</strong></p>
+                    </div>
+
+                    <div class="pagamento-coluna pagamento-coluna-comprovativo">
+                        <h2 class="titulo-passo" id="passo2"><span>2</span> Enviar comprovativo</h2>
+                        <p id="semQuotaPendente" class="nota-referencia" style="display:none;">Não tem nenhuma quota por pagar. Obrigado!</p>
+                        <form id="comprovativoQuotaForm" class="contact-form form-comprovativo" style="display:none;">
+                            <div id="mensagemComprovativoQuota" style="display:none; padding: 12px 16px; border-radius: 8px; margin-bottom: 20px; font-size: 14px;"></div>
+                            <div class="form-group">
+                                <label>Método de pagamento utilizado *</label>
+                                <div style="display:flex; gap:24px; margin-top:8px; flex-wrap:wrap;">
+                                    <label style="display:flex; align-items:center; gap:8px; font-weight:400; font-size:14px;">
+                                        <input type="radio" name="metodoPagamentoQuota" value="transferencia" required style="width:auto;"> Transferência Bancária
+                                    </label>
+                                    <label style="display:flex; align-items:center; gap:8px; font-weight:400; font-size:14px;">
+                                        <input type="radio" name="metodoPagamentoQuota" value="mbway" style="width:auto;"> MB WAY
+                                    </label>
+                                </div>
+                            </div>
+                            <div class="form-group" id="grupoTelefoneMbwayQuota" style="display:none;">
+                                <label for="telefoneMbwayQuota">Nº de Telemóvel que utilizou para efetuar o pagamento</label>
+                                <input type="tel" id="telefoneMbwayQuota" name="telefoneMbwayQuota" placeholder="9XX XXX XXX">
+                            </div>
+                            <div class="form-group">
+                                <label class="area-upload" for="ficheiroComprovativoQuota">
+                                    <span class="area-upload-icone" aria-hidden="true">📷</span>
+                                    <strong>Tirar fotografia ou escolher ficheiro *</strong>
+                                    <small>Fotografia, print do MB WAY ou PDF (máx. 15 MB)</small>
+                                    <input type="file" id="ficheiroComprovativoQuota" name="ficheiroComprovativoQuota" class="input-upload-escondido" accept="image/jpeg,image/png,image/webp,image/heic,image/heif,application/pdf" required>
+                                </label>
+                            </div>
+                            <div class="form-group">
+                                <label for="referenciaPagamentoQuota">Descrição usada na transferência (opcional)</label>
+                                <input type="text" id="referenciaPagamentoQuota" name="referenciaPagamentoQuota" placeholder="Ex: Nome + NIF">
+                            </div>
+                            <button type="submit" id="btnEnviarComprovativoQuota" class="btn btn-primary" style="width: 100%;">Enviar Comprovativo</button>
+                        </form>
+                    </div>
+                </div>
+
+                <p class="nota-spam">📧 Vai receber emails sobre o estado da sua quota. Se não os encontrar, veja nas pastas de <strong>Spam</strong> ou <strong>Lixo Eletrónico</strong>.</p>
+
+                <div style="text-align: center;">
+                    <a href="perfil.html" class="btn-outline" style="display: inline-block; margin-top: 30px;">Voltar ao Meu Perfil</a>
+                </div>
             </div>
         </section>
     </main>
+
+    <!-- Atalho para o passo 2 (só no telemóvel); mostrado por js/main.js quando há formulário -->
+    <div class="cta-comprovativo-mobile" id="ctaComprovativoMobile" hidden>
+        <span>Já pagou?</span>
+        <a href="#passo2" class="btn btn-primary">Enviar comprovativo</a>
+    </div>
 
     <footer class="footer">
         <div class="container footer-container">
@@ -149,7 +180,7 @@
         </div>
     </footer>
 
-    <script src="js/main.js?v=20261029"></script>
+    <script src="js/main.js?v=20261030"></script>
     <script type="module">
         import {
             getSessao, getPerfil, getMinhasQuotas, formatarMoeda,
@@ -182,10 +213,17 @@
 
         if (!quotaPendente) {
             // nada por pagar -- não há formulário de comprovativo para mostrar
-            document.getElementById('labelQuota').textContent = 'Quota:'
+            document.getElementById('labelQuota').textContent = 'Quota'
             document.getElementById('valorQuota').textContent = 'Sem quota pendente'
+            document.getElementById('passosPagamento').style.display = 'none'
+            document.getElementById('semQuotaPendente').style.display = 'block'
+            const aviso = document.getElementById('avisoComprovativo')
+            aviso.classList.add('concluido')
+            aviso.innerHTML = '<strong>✓ Não tem nenhuma quota por pagar</strong>'
         } else {
-            document.getElementById('labelQuota').textContent = `Quota Anual ${quotaPendente.ano}:`
+            document.getElementById('labelQuota').textContent = `Quota anual ${quotaPendente.ano}`
+            // Comprovativo já enviado e a aguardar validação (pode reenviar se precisar)
+            if (quotaPendente.estado === 'pendente_validacao') window.marcarPassoPagamento?.(3)
             document.getElementById('valorQuota').textContent = formatarMoeda(quotaPendente.valor)
             document.getElementById('referenciaQuota').textContent = `${nomeCompleto} + ${perfil?.nif || ''}`
 
@@ -194,6 +232,9 @@
 
             if (!pagErr && pagamento?.pagamento_token) {
                 form.style.display = 'block'
+                // Botões "Copiar", nome do ficheiro e atalho do telemóvel (js/main.js)
+                if (quotaPendente.estado !== 'pendente_validacao') window.configurarAjudasPagamento?.()
+                else window.configurarAjudasPagamento?.({ semAtalho: true })
 
                 const radiosMetodoPagamento = document.querySelectorAll('input[name="metodoPagamentoQuota"]')
                 const grupoTelefone = document.getElementById('grupoTelefoneMbwayQuota')
@@ -254,6 +295,7 @@
                             if (window.mostrarPopup) window.mostrarPopup('O seu pagamento já foi validado pela nossa equipa. Não é necessário submeter novamente.', 'sucesso')
                             btnEnviar.disabled = true
                             btnEnviar.textContent = 'Já Validado'
+                            window.marcarPassoPagamento?.(3)
                             return
                         }
                         mostrarMsg('Erro ao registar o comprovativo. Tente novamente.', 'erro')
@@ -266,6 +308,7 @@
                     mostrarMsg('Comprovativo enviado com sucesso. Aguarde validação da equipa.', 'sucesso')
                     if (window.mostrarPopup) window.mostrarPopup('Comprovativo enviado com sucesso. Aguarde a validação da nossa equipa.', 'sucesso')
                     btnEnviar.textContent = 'Enviado ✓'
+                    window.marcarPassoPagamento?.(3)
                 })
             }
         }

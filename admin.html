@@ -6,7 +6,7 @@
     <title>Back-office - USGA</title>
     <link rel="icon" type="image/png" sizes="32x32" href="images/favicon-32.png">
     <link rel="apple-touch-icon" href="images/logo-192.png">
-    <link rel="stylesheet" href="css/style.css?v=20261029">
+    <link rel="stylesheet" href="css/style.css?v=20261030">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap" rel="stylesheet">
@@ -37,6 +37,7 @@
         .stat-card { background: #fff; border: 1px solid #eee; border-radius: 8px; padding: 20px; text-align: center; }
         .stat-card .num { font-size: 32px; font-weight: 700; color: var(--primary-color); }
         .stat-card .lbl { font-size: 13px; color: #888; margin-top: 4px; }
+        .stat-card .det { font-size: 12px; color: var(--accent-dark); font-weight: 600; margin-top: 4px; min-height: 16px; }
         .form-inline { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; margin-bottom: 20px; }
         .form-inline input, .form-inline select { padding: 8px 12px; border: 1px solid #ddd; border-radius: 6px; font-size: 16px; }
         .form-inline input { flex: 1; min-width: 180px; }
@@ -164,8 +165,8 @@
                         <div class="stat-cards">
                             <div class="stat-card"><div class="num" id="ds-socios">-</div><div class="lbl">Sócios ativos</div></div>
                             <div class="stat-card"><div class="num" id="ds-pedidos">-</div><div class="lbl">Pedidos pendentes</div></div>
-                            <div class="stat-card"><div class="num" id="ds-inscricoes">-</div><div class="lbl">Inscrições pendentes</div></div>
-                            <div class="stat-card"><div class="num" id="ds-quotas">-</div><div class="lbl">Quotas por pagar</div></div>
+                            <div class="stat-card"><div class="num" id="ds-inscricoes">-</div><div class="lbl">Inscrições pendentes</div><div class="det" id="ds-inscricoes-detalhe"></div></div>
+                            <div class="stat-card"><div class="num" id="ds-quotas">-</div><div class="lbl">Quotas pendentes</div><div class="det" id="ds-quotas-detalhe"></div></div>
                             <div class="stat-card"><div class="num" id="ds-suporte">-</div><div class="lbl">Mensagens novas</div></div>
                             <div class="stat-card"><div class="num" id="ds-eventos">-</div><div class="lbl">Eventos abertos</div></div>
                         </div>
@@ -689,7 +690,7 @@
         </div>
     </footer>
 
-    <script src="js/main.js?v=20261029"></script>
+    <script src="js/main.js?v=20261030"></script>
     <script type="module">
         import {
             requireAdmin, supabase,
@@ -882,34 +883,70 @@
         }
 
         // ── DASHBOARD ────────────────────────────────────────────────────
-        async function carregarDashboard() {
-            const [
-                { count: socios },
-                { count: pedidos },
-                { count: inscricoes },
-                { count: quotas },
-                { count: suporteMsg },
-                { count: eventos }
-            ] = await Promise.all([
-            // Count only actual members (have numero_socio)
-            supabase.from('utilizadores').select('*', { count:'exact', head:true }).not('numero_socio','is', null),
-            supabase.from('pedidos_socio').select('*', { count:'exact', head:true }).eq('estado','pendente'),
-            supabase.from('inscricoes_evento').select('*', { count:'exact', head:true }).eq('pagamento_estado','pendente'),
-            supabase.from('quotas').select('*', { count:'exact', head:true }).eq('estado','por_pagar'),
-            supabase.from('mensagens_suporte').select('*', { count:'exact', head:true }).eq('resolvido', false),
-            supabase.from('eventos').select('*', { count:'exact', head:true }).eq('estado','aberto')
-            ])
-            document.getElementById('ds-socios').textContent    = socios ?? 0
-            document.getElementById('ds-pedidos').textContent   = pedidos ?? 0
-            document.getElementById('ds-inscricoes').textContent = inscricoes ?? 0
-            document.getElementById('ds-quotas').textContent    = quotas ?? 0
-            document.getElementById('ds-suporte').textContent   = suporteMsg ?? 0
-            document.getElementById('ds-eventos').textContent   = eventos ?? 0
+        // Contagens do dashboard e dos números da barra lateral. Uma só regra por
+        // área, para os dois sítios mostrarem sempre o mesmo número; é chamada
+        // sempre que uma secção é recarregada ou depois de uma ação.
+        //   Sócios ativos: estado "ativo" e com número de sócio
+        //   Pedidos: pedidos de sócio pendentes
+        //   Inscrições: não rejeitadas/canceladas, a aguardar pagamento OU validação
+        //   Quotas: por pagar OU a aguardar validação
+        //   Mensagens: ainda não marcadas como resolvidas (inclui as que nunca foram marcadas)
+        async function atualizarContagens() {
+            const contar = consulta => consulta.then(({ count, error }) => {
+                if (error) { console.error('Erro na contagem:', error); return null }
+                return count ?? 0
+            })
+            const contarTabela = tabela => supabase.from(tabela).select('id', { count: 'exact', head: true })
+            const inscricoesAtivas = () => contarTabela('inscricoes_evento').not('estado', 'in', '(rejeitada,cancelada)')
 
-            document.getElementById('sb-pedidos').textContent  = pedidos ?? 0
-            document.getElementById('sb-inscricoes').textContent = inscricoes ?? 0
-            document.getElementById('sb-quotas').textContent   = quotas ?? 0
-            document.getElementById('sb-suporte').textContent  = suporteMsg ?? 0
+            const [socios, pedidos, inscPorPagar, inscPorValidar, quotasPorPagar, quotasPorValidar, mensagens, eventos] = await Promise.all([
+                contar(contarTabela('utilizadores').eq('estado', 'ativo').not('numero_socio', 'is', null).neq('numero_socio', '')),
+                contar(contarTabela('pedidos_socio').eq('estado', 'pendente')),
+                contar(inscricoesAtivas().eq('pagamento_estado', 'pendente')),
+                contar(inscricoesAtivas().eq('pagamento_estado', 'em_validacao')),
+                contar(contarTabela('quotas').eq('estado', 'por_pagar')),
+                contar(contarTabela('quotas').eq('estado', 'pendente_validacao')),
+                contar(contarTabela('mensagens_suporte').not('resolvido', 'is', true)),
+                contar(contarTabela('eventos').eq('estado', 'aberto'))
+            ])
+
+            const soma = (a, b) => (a === null || b === null) ? null : a + b
+            const inscricoes = soma(inscPorPagar, inscPorValidar)
+            const quotas = soma(quotasPorPagar, quotasPorValidar)
+
+            const mostrar = (id, valor) => {
+                const el = document.getElementById(id)
+                if (el) el.textContent = valor === null ? '?' : valor
+            }
+            // Na barra lateral o número só aparece quando há algo pendente.
+            const mostrarBadge = (id, valor) => {
+                const el = document.getElementById(id)
+                if (!el) return
+                el.textContent = valor === null ? '?' : valor
+                el.style.display = valor === 0 ? 'none' : ''
+            }
+            const detalhe = (id, porValidar) => {
+                const el = document.getElementById(id)
+                if (el) el.textContent = porValidar ? `${porValidar} a aguardar validação` : ''
+            }
+
+            mostrar('ds-socios', socios)
+            mostrar('ds-pedidos', pedidos)
+            mostrar('ds-inscricoes', inscricoes)
+            mostrar('ds-quotas', quotas)
+            mostrar('ds-suporte', mensagens)
+            mostrar('ds-eventos', eventos)
+            detalhe('ds-inscricoes-detalhe', inscPorValidar)
+            detalhe('ds-quotas-detalhe', quotasPorValidar)
+
+            mostrarBadge('sb-pedidos', pedidos)
+            mostrarBadge('sb-inscricoes', inscricoes)
+            mostrarBadge('sb-quotas', quotas)
+            mostrarBadge('sb-suporte', mensagens)
+        }
+
+        async function carregarDashboard() {
+            await atualizarContagens()
 
             const { data: recente } = await supabase
                 .from('inscricoes_evento')
@@ -1571,6 +1608,7 @@
                 return
             }
             window._inscricoes = data || []
+            atualizarContagens()
             // Nº de pessoas inscritas com o mesmo pagamento (inscrição de grupo)
             window._tamanhoGrupo = {}
             window._inscricoes.forEach(i => {
@@ -2073,7 +2111,7 @@
         async function carregarPedidos() {
             const { data } = await getAdminPedidosSocio()
             todosPedidos = data || []
-            document.getElementById('sb-pedidos').textContent = todosPedidos.filter(p => p.estado === 'pendente').length || 0
+            atualizarContagens()
             filtrarPedidos()
         }
 
@@ -2131,7 +2169,7 @@
         window.carregarQuotas = async function() {
             const { data } = await getAdminQuotas()
             todasQuotas = data || []
-            document.getElementById('sb-quotas').textContent = data?.filter(q => q.estado === 'por_pagar' || q.estado === 'pendente_validacao').length || 0
+            atualizarContagens()
             document.getElementById('kpi-quotas-pagas').textContent = data?.filter(q => q.estado === 'pago' || q.estado === 'isento').length || 0
             document.getElementById('kpi-quotas-pendentes').textContent = data?.filter(q => q.estado === 'por_pagar' || q.estado === 'pendente_validacao').length || 0
             filtrarQuotas()
@@ -2299,6 +2337,7 @@
                 return
             }
             todosPagamentos = data || []
+            atualizarContagens()
             participantesPorPagamento = {}
             ;(grupos || []).forEach(g => {
                 (participantesPorPagamento[g.pagamento_id] ||= []).push({ nome: g.nome, prova: g.evento_provas?.nome || null })
@@ -2404,7 +2443,7 @@
         async function carregarSuporte() {
             const { data } = await supabase.from('mensagens_suporte').select('*').order('created_at', { ascending: false })
             todasMensagensSuporte = data || []
-            document.getElementById('sb-suporte').textContent = todasMensagensSuporte.filter(m => !m.resolvido).length || 0
+            atualizarContagens()
             filtrarSuporte()
         }
 
