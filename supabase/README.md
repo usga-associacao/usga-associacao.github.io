@@ -31,6 +31,23 @@ Migracoes:
   grupo (`criar_inscricao_grupo`, ate 5 participantes com um so pagamento).
 - `20261022_emails_grupo.sql` — os triggers de email passam a enviar um so email por grupo.
 
+- `20261022_agendamentos_emails.sql` — agendamentos diarios (pg_cron) de
+  `notificar-aniversarios` (08:00 UTC) e `notificar-quotas-expiradas` (08:05 UTC). A chave
+  secreta e lida do Vault (segredo `cron_service_key`); ver instrucoes no topo do ficheiro.
+
+## Edge Functions
+
+Todas enviam pelo SMTP configurado em Admin → Definicoes → Email (Gmail) e registam em `logs_email`.
+Nenhuma usa o Resend (as secrets `RESEND_API_KEY` / `RESEND_FROM_EMAIL` podem ser apagadas).
+
+| Funcao | Ficheiro | Quando corre |
+|---|---|---|
+| `enviar-email` | `supabase/index.ts` | chamada pelo site e pelo admin |
+| `notificar-aniversarios` | `supabase/functions/notificar-aniversarios/index.ts` | todos os dias (pg_cron) |
+| `notificar-quotas-expiradas` | `supabase/functions/notificar-quotas-expiradas/index.ts` | todos os dias (pg_cron) |
+
+Para publicar uma alteracao: Dashboard → Edge Functions → abrir a funcao → colar o ficheiro → Deploy.
+
 **Emails de inscricao:** sao enviados pelo site (`js/main.js` e `admin.html` chamam a
 Edge Function `enviar-email`). Os triggers `inscricoes_evento_email_*` existem mas estao
 inativos, porque `edge_function_url_base` / `edge_function_service_key` nao estao

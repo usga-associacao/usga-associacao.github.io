@@ -492,6 +492,16 @@
                             <p id="tpl-lembrete_quota-msg" style="margin-top:10px;font-size:13px;"></p>
                         </div>
 
+                        <div class="content-box" style="max-width:600px;margin-bottom:20px;">
+                            <div class="box-header"><h3>Modelo: Quota Expirada (automático)</h3></div>
+                            <p style="font-size:13px;color:#666;margin-bottom:12px;">Enviado automaticamente todos os dias às 8h a quem tem a quota paga e já expirada (só quotas expiradas nos últimos 30 dias).</p>
+                            <div class="form-group"><label>Assunto</label><input type="text" id="tpl-quota_expirada-assunto"></div>
+                            <div class="form-group"><label>Corpo</label><textarea id="tpl-quota_expirada-corpo" rows="10"></textarea></div>
+                            <p style="font-size:12px;color:#999;margin-bottom:10px;">Placeholders disponíveis: {{nome}} {{email}} {{clube}} {{ano}} {{data_expiracao}}</p>
+                            <button class="btn btn-primary btn-small" onclick="guardarTemplate('quota_expirada')">Guardar Modelo</button>
+                            <p id="tpl-quota_expirada-msg" style="margin-top:10px;font-size:13px;"></p>
+                        </div>
+
                         <div class="content-box" style="max-width:800px;">
                             <div class="box-header"><h3>Registo de Envios</h3></div>
                             <div class="participants-table-wrapper">
@@ -2502,6 +2512,7 @@
                 'template_confirmada_assunto', 'template_confirmada_corpo',
                 'template_aniversario_assunto', 'template_aniversario_corpo',
                 'template_lembrete_quota_assunto', 'template_lembrete_quota_corpo',
+                'template_quota_expirada_assunto', 'template_quota_expirada_corpo',
                 'template_rejeitada_assunto', 'template_rejeitada_corpo',
                 'template_socio_aprovado_assunto', 'template_socio_aprovado_corpo',
                 'template_socio_rejeitado_assunto', 'template_socio_rejeitado_corpo'
@@ -2528,6 +2539,8 @@
             document.getElementById('tpl-aniversario-corpo').value = cfg.template_aniversario_corpo || ''
             document.getElementById('tpl-lembrete_quota-assunto').value = cfg.template_lembrete_quota_assunto || ''
             document.getElementById('tpl-lembrete_quota-corpo').value = cfg.template_lembrete_quota_corpo || ''
+            document.getElementById('tpl-quota_expirada-assunto').value = cfg.template_quota_expirada_assunto || ''
+            document.getElementById('tpl-quota_expirada-corpo').value = cfg.template_quota_expirada_corpo || ''
             document.getElementById('tpl-rejeitada-assunto').value = cfg.template_rejeitada_assunto || ''
             document.getElementById('tpl-rejeitada-corpo').value = cfg.template_rejeitada_corpo || ''
             document.getElementById('tpl-socio_aprovado-assunto').value = cfg.template_socio_aprovado_assunto || ''
@@ -2597,7 +2610,7 @@
             tbody.innerHTML = data.map(l => `
                 <tr>
                     <td style="font-size:12px;">${formatarData(l.created_at)}</td>
-                    <td>${{'pendente':'Pendente','confirmada':'Confirmada','rejeitada':'Rejeitada','aniversario':'Aniversário','fatura':'Fatura','suporte':'Suporte','lembrete_quota':'Lembrete de Quota','socio_aprovado':'Sócio Aprovado','socio_rejeitado':'Sócio Rejeitado'}[l.tipo] || l.tipo}</td>
+                    <td>${{'pendente':'Pendente','confirmada':'Confirmada','rejeitada':'Rejeitada','aniversario':'Aniversário','fatura':'Fatura','suporte':'Suporte','lembrete_quota':'Lembrete de Quota','quota_expirada':'Quota Expirada','socio_aprovado':'Sócio Aprovado','socio_rejeitado':'Sócio Rejeitado'}[l.tipo] || l.tipo}</td>
                     <td style="font-size:12px;">${l.destinatario}</td>
                     <td>${l.estado === 'enviado' ? '<span class="badge badge-pago">Enviado</span>' : '<span class="badge badge-nao-socio">Erro</span>'}</td>
                     <td style="font-size:12px;color:#999;">${l.erro_detalhe || '-'}</td>
