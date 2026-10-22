@@ -374,13 +374,19 @@ export async function rejeitarPagamento(pagamentoId, motivo = null) {
 
 export async function criarMensagemSuporte(dados) {
   const sessao = await getSessao()
-  const payload = { ...dados, utilizador_id: sessao?.user?.id ?? null }
-  const { data, error } = await supabase
+  // O id é gerado aqui: quem não tem sessão pode inserir a mensagem mas não a
+  // pode ler de volta (RLS), e o id é preciso para o email de aviso.
+  const id = crypto.randomUUID()
+  const payload = { ...dados, id, utilizador_id: sessao?.user?.id ?? null }
+  const { error } = await supabase
     .from('mensagens_suporte')
     .insert(payload)
-    .select()
-    .single()
-  return { data, error }
+  return { data: error ? null : { id }, error }
+}
+
+// Avisa a associação (email principal em Admin → Email) de uma nova mensagem de suporte.
+export function dispararEmailSuporte(mensagemId) {
+  return supabase.functions.invoke('enviar-email', { body: { categoria: 'suporte', mensagem_id: mensagemId } }).catch(() => {})
 }
 
 // Back-office ----------------------------------------------------------------

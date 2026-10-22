@@ -418,14 +418,17 @@ function configurarSuporte(api) {
       mensagem: form.mensagem.value.trim()
     }
 
-    const { error } = await api.criarMensagemSuporte(dados)
-
-    bloquearBotao(submitBtn, false, 'Enviar Mensagem')
+    const { data, error } = await api.criarMensagemSuporte(dados)
 
     if (error) {
+      bloquearBotao(submitBtn, false, 'Enviar Mensagem')
       mostrarMensagem(form, 'Nao foi possivel enviar a mensagem. Tente novamente.', 'erro')
       return
     }
+
+    // A mensagem já está guardada (e visível no admin); o email é um aviso extra.
+    await api.dispararEmailSuporte(data.id)
+    bloquearBotao(submitBtn, false, 'Enviar Mensagem')
 
     mostrarMensagem(form, 'Mensagem enviada com sucesso. Entraremos em contacto brevemente.', 'sucesso')
     form.reset()
