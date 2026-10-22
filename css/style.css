@@ -163,36 +163,40 @@ ul {
 
 .nav-link:hover, .nav-link.active {
     color: var(--primary-color);
-    font-weight: 700;
 }
 
-/* --- MENU TRANSPARENTE (CLASSE .home-page) --- */
+/* --- CABEÇALHO BRANCO (todas as páginas usam .home-page) ---
+   Barra branca fixa no topo; a opção da página atual fica a verde
+   com texto branco, e as restantes ganham um verde claro ao passar o rato. */
 body.home-page .header {
-    position: absolute;
-    width: 100%;
-    background-color: transparent;
-    border-bottom: none;
+    position: sticky;
     top: 0;
+    width: 100%;
+    background-color: #ffffff;
+    border-bottom: 1px solid var(--border-color);
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.04);
+    padding: 12px 0;
 }
 
-body.home-page .logo {
-    color: #ffffff;
-    text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+body.home-page .header .logo-img {
+    box-shadow: none;
 }
 
 body.home-page .nav-link {
-    color: #ffffff;
-    text-shadow: 0 2px 4px rgba(0,0,0,0.3);
-    padding: 8px 16px; 
+    color: var(--secondary-color);
+    padding: 8px 16px;
     border-radius: 8px;
-    transition: all 0.3s ease;
+    transition: background-color 0.2s ease, color 0.2s ease;
 }
 
-body.home-page .nav-link:hover,
+body.home-page .nav-link:hover {
+    color: var(--accent-dark);
+    background-color: var(--accent-light);
+}
+
 body.home-page .nav-link.active {
-    color: #000000;
-    background-color: rgba(255, 255, 255, 0.9);
-    text-shadow: none;
+    color: #ffffff;
+    background-color: var(--accent-color);
     font-weight: 600;
 }
 
@@ -237,7 +241,7 @@ body.home-page .nav-link.active {
 /* Contentor Principal */
 .hero-bg-slideshow {
     position: relative;
-    padding-top: 160px;
+    padding-top: 110px;
     padding-bottom: 100px;
     margin-top: 0;
     overflow: hidden;
@@ -888,7 +892,7 @@ body:has(.hero-mountain-edge) {
     /* Elementos ficavam com o mesmo tamanho/espaçamento do desktop em ecrãs
        pequenos, dando sensação de estar tudo "colado"/ampliado demais. */
     .hero-bg-slideshow {
-        padding-top: 100px;
+        padding-top: 60px;
         padding-bottom: 60px;
     }
 
@@ -1063,7 +1067,7 @@ body:has(.hero-mountain-edge) {
     display: block;
     width: 100%;
     height: 2px;
-    background-color: #fff;
+    background-color: var(--primary-color);
     border-radius: 2px;
     transition: all 0.3s ease;
 }
@@ -1079,8 +1083,11 @@ body:not(.home-page) .nav-toggle span {
 .nav-toggle.open span:nth-child(3) { transform: translateY(-7px) rotate(-45deg); }
 
 @media (max-width: 768px) {
+    /* Botão do menu encostado ao "Login", à direita */
     .nav-toggle {
         display: flex;
+        margin-left: auto;
+        margin-right: 14px;
     }
 
     /* O <nav> original de desktop já não é reaproveitado em mobile.
@@ -1145,16 +1152,24 @@ body:not(.home-page) .nav-toggle span {
 .mobile-nav-list a {
     display: block;
     width: 100%;
-    padding: 18px 10px;
+    padding: 14px 16px;
+    margin: 4px 0;
+    border-radius: 8px;
     font-size: 16px;
     font-weight: 500;
     color: #000;
 }
 
-.mobile-nav-list a:hover,
+/* Igual ao menu de computador: verde claro ao tocar, verde com texto branco na página atual. */
+.mobile-nav-list a:hover {
+    color: var(--accent-dark);
+    background-color: var(--accent-light);
+}
+
 .mobile-nav-list a.active {
-    color: var(--accent-color);
-    font-weight: 700;
+    color: #ffffff;
+    background-color: var(--accent-color);
+    font-weight: 600;
 }
 
 @media (min-width: 769px) {
@@ -1363,3 +1378,82 @@ body:not(.home-page) .nav-toggle span {
         padding: 16px;
     }
 }
+
+
+/* --- PRÓXIMOS EVENTOS NA PÁGINA INICIAL --- */
+.proximos-eventos-home {
+    padding: 70px 0 40px;
+}
+
+.projects-grid.projects-grid-3 {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 30px;
+}
+
+.proximos-eventos-vazio {
+    background: #fff;
+    border: 1px dashed var(--border-color);
+    border-radius: 14px;
+    padding: 30px;
+    text-align: center;
+    color: var(--text-color);
+}
+
+.proximos-eventos-vazio a {
+    color: var(--accent-color);
+    font-weight: 600;
+}
+
+@media (max-width: 1024px) {
+    .projects-grid.projects-grid-3 {
+        grid-template-columns: 1fr 1fr;
+    }
+}
+
+@media (max-width: 768px) {
+    .proximos-eventos-home {
+        padding: 45px 0 20px;
+    }
+
+    .projects-grid.projects-grid-3 {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* Estado do evento no cartão (canto superior direito da imagem) */
+.project-estado-badge {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    font-size: 11px;
+    font-weight: 700;
+    padding: 5px 12px;
+    border-radius: 100px;
+    background: #fff;
+    color: var(--primary-color);
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.12);
+}
+
+.project-estado-badge.estado-aberto { background: var(--accent-light); color: var(--accent-dark); }
+.project-estado-badge.estado-brevemente { background: #ede9fe; color: #5b21b6; }
+.project-estado-badge.estado-fechado { background: #f3f4f6; color: #4b5563; }
+.project-estado-badge.estado-cancelado { background: #fee2e2; color: #991b1b; }
+
+/* Evento sem imagem: fundo verde com o logótipo, em vez de um quadrado vazio */
+.sem-imagem {
+    background-image: linear-gradient(135deg, var(--accent-dark), var(--accent-color)) !important;
+    background-size: cover !important;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.sem-imagem::after {
+    content: '';
+    width: 150px;
+    height: 87px;
+    border-radius: 12px;
+    background: #fff url('../images/logo-cabecalho.png') center center / contain no-repeat;
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.18);
+}
+
