@@ -151,7 +151,7 @@ async function processarInscricao(supabase: ReturnType<typeof createClient>, bod
 
   const { data: inscricao, error: inscricaoErr } = await supabase
     .from('inscricoes_evento')
-    .select('nome, email, dorsal, public_token, pagamento_id, evento_provas(nome), eventos(titulo, data_evento, local, preco, contribuicao_unidade)')
+    .select('nome, email, dorsal, public_token, pagamento_id, evento_provas(nome), eventos(titulo, slug, data_evento, local, preco, contribuicao_unidade)')
     .eq('id', inscricaoId)
     .single()
 
@@ -173,7 +173,7 @@ async function processarInscricao(supabase: ReturnType<typeof createClient>, bod
         .order('data_inscricao', { ascending: true })
     : { data: null }
 
-  const evento = inscricao.eventos as { titulo?: string; data_evento?: string; local?: string; preco?: number; contribuicao_unidade?: string } | null
+  const evento = inscricao.eventos as { titulo?: string; slug?: string; data_evento?: string; local?: string; preco?: number; contribuicao_unidade?: string } | null
   const prova = inscricao.evento_provas as { nome?: string } | null
   const participantes = (grupo || []) as { nome: string; dorsal: string | null; estado: string; evento_provas: { nome?: string } | null }[]
   const listaParticipantes = participantes
@@ -191,7 +191,8 @@ async function processarInscricao(supabase: ReturnType<typeof createClient>, bod
     participantes: listaParticipantes || inscricao.nome || '',
     dorsal: inscricao.dorsal || '-',
     link_estado: inscricao.public_token ? `https://usga-associacao.github.io/estado-inscricao.html?token=${inscricao.public_token}` : 'https://usga-associacao.github.io/estado-inscricao.html',
-    link_pagamento: pagamento?.public_token ? `https://usga-associacao.github.io/pagamento-evento.html?token=${pagamento.public_token}` : 'https://usga-associacao.github.io/estado-inscricao.html'
+    link_pagamento: pagamento?.public_token ? `https://usga-associacao.github.io/pagamento-evento.html?token=${pagamento.public_token}` : 'https://usga-associacao.github.io/estado-inscricao.html',
+    link_evento: evento?.slug ? `https://usga-associacao.github.io/evento-futuro.html?evento=${encodeURIComponent(evento.slug)}` : 'https://usga-associacao.github.io/eventos.html'
   }
 
   const chaveAssunto = tipo === 'confirmada' ? 'template_confirmada_assunto' : tipo === 'rejeitada' ? 'template_rejeitada_assunto' : 'template_pendente_assunto'
@@ -211,6 +212,12 @@ async function processarInscricao(supabase: ReturnType<typeof createClient>, bod
   // Templates antigos não têm {{participantes}}: num grupo, a lista é acrescentada no fim.
   if (participantes.length > 1 && !corpoTemplate.includes('{{participantes}}')) {
     corpo += `\n\nParticipantes desta inscrição:\n${listaParticipantes}`
+  }
+  // Link para a página do evento (provas, horários, percurso, documentos), para
+  // não ser preciso repetir essa informação nos emails. Templates sem
+  // {{link_evento}} recebem-no no fim (exceto o de inscrição rejeitada).
+  if (tipo !== 'rejeitada' && !corpoTemplate.includes('{{link_evento}}')) {
+    corpo += `\n\nToda a informação do evento (provas, horários, percurso e documentos):\n${dadosTemplate.link_evento}`
   }
 
   const smtp = await obterConfigSmtp(supabase)
