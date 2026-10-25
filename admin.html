@@ -10,7 +10,7 @@
     <link rel="icon" type="image/png" sizes="192x192" href="images/logo-192.png">
     <link rel="icon" type="image/png" sizes="32x32" href="images/favicon-32.png">
     <link rel="apple-touch-icon" href="images/logo-192.png">
-    <link rel="stylesheet" href="css/style.css?v=20261031">
+    <link rel="stylesheet" href="css/style.css?v=20261032">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap" rel="stylesheet">
@@ -66,6 +66,7 @@
         .prova-row textarea { min-height: 50px; margin-top: 8px; }
         .doc-row-fonte { display: flex; gap: 8px; align-items: center; margin-top: 8px; }
         .doc-row-fonte .doc-tipo { width: auto; flex-shrink: 0; }
+        .doc-row-topo .doc-icone { width: auto; max-width: 150px; flex-shrink: 0; }
         .ev-docs-lista { display: flex; flex-direction: column; gap: 10px; margin-bottom: 8px; }
         .doc-atual { font-size: 12px; color: #666; margin-top: 6px; }
         .participants-table tr.grupo-cabecalho td { background: #f5f3ff; color: #5b21b6; font-size: 13px; padding: 8px 20px; border-top: 2px solid #ddd6fe; }
@@ -694,7 +695,7 @@
         </div>
     </footer>
 
-    <script src="js/main.js?v=20261031"></script>
+    <script src="js/main.js?v=20261032"></script>
     <script type="module">
         import {
             requireAdmin, supabase,
@@ -1245,6 +1246,40 @@
         }
         document.getElementById('ev-contribuicao-unidade').addEventListener('input', atualizarExemploContribuicao)
 
+        // Ícones para os documentos dos eventos ('' = automático pelo tipo de ficheiro)
+        const ICONES_DOCUMENTOS = [
+            ['', 'Automático'],
+            ['📄', 'Documento / PDF'],
+            ['📜', 'Regulamento'],
+            ['📋', 'Lista de participantes'],
+            ['📊', 'Classificações'],
+            ['🏆', 'Resultados / Prémios'],
+            ['🏅', 'Medalhas'],
+            ['📷', 'Fotografias'],
+            ['🎥', 'Vídeo'],
+            ['🗺️', 'Mapa / Percurso'],
+            ['📍', 'Localização'],
+            ['⛰️', 'Altimetria'],
+            ['⏰', 'Horários'],
+            ['📅', 'Programa'],
+            ['🥾', 'Caminhada'],
+            ['🏃', 'Corrida / Trail'],
+            ['🚴', 'BTT / Ciclismo'],
+            ['👕', 'T-shirt / Kit'],
+            ['🍎', 'Abastecimento'],
+            ['💧', 'Água'],
+            ['🅿️', 'Estacionamento'],
+            ['🚌', 'Transporte'],
+            ['🩹', 'Seguro / Saúde'],
+            ['ℹ️', 'Informação'],
+            ['⚠️', 'Aviso'],
+            ['📞', 'Contactos'],
+            ['📰', 'Notícia'],
+            ['🎉', 'Convívio / Festa'],
+            ['❤️', 'Solidariedade'],
+            ['🔗', 'Link']
+        ]
+
         window.adicionarLinhaDocumento = function(seccao, doc) {
             const lista = document.getElementById(`ev-docs-${seccao}`)
             const row = document.createElement('div')
@@ -1253,6 +1288,9 @@
             row.dataset.ficheiroAtual = doc?.tipo === 'ficheiro' ? (doc.url || '') : ''
             row.innerHTML = `
                 <div class="doc-row-topo">
+                    <select class="doc-icone" title="Ícone mostrado na página do evento">
+                        ${ICONES_DOCUMENTOS.map(([icone, nome]) => `<option value="${icone}">${icone ? icone + ' ' : '✨ '}${nome}</option>`).join('')}
+                    </select>
                     <input type="text" class="doc-titulo" placeholder="Título (ex: Classificação, Mapa do percurso)" style="flex:2;">
                     <select class="doc-prova" style="flex:1;" title="Prova a que o documento pertence"></select>
                     <button type="button" class="btn-secondary doc-remover" title="Remover documento">✕</button>
@@ -1270,6 +1308,7 @@
             const atual = row.querySelector('.doc-atual')
             tipoSel.value = doc?.tipo || 'ficheiro'
             row.querySelector('.doc-titulo').value = doc?.titulo || ''
+            row.querySelector('.doc-icone').value = doc?.icone || ''
             if (doc?.tipo === 'link') row.querySelector('.doc-url').value = doc.url || ''
             if (row.dataset.ficheiroAtual) {
                 atual.innerHTML = `Ficheiro atual: <a href="${escapeHtml(row.dataset.ficheiroAtual)}" target="_blank" rel="noopener" style="color:var(--accent-color);">abrir</a> — escolha outro ficheiro para o substituir.`
@@ -1385,6 +1424,7 @@
                 seccao: row.dataset.seccao,
                 titulo: row.querySelector('.doc-titulo').value.trim(),
                 chaveProva: row.querySelector('.doc-prova').value || null,
+                icone: row.querySelector('.doc-icone').value || null,
                 tipo: row.querySelector('.doc-tipo').value,
                 url: row.querySelector('.doc-url').value.trim(),
                 ficheiro: row.querySelector('.doc-ficheiro').files?.[0] || null,
@@ -1554,6 +1594,7 @@
                         titulo: d.titulo,
                         url,
                         tipo: d.tipo,
+                        icone: d.icone,
                         ordem: d.ordem
                     })
                 }

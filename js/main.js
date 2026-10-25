@@ -1632,7 +1632,7 @@ function renderDocumentosPorProva(documentos, provas) {
         ${g.docs.map(d => `
           <li>
             <a href="${escapeHtml(urlSegura(d.url))}" target="_blank" rel="noopener">
-              <span aria-hidden="true">${iconeDocumento(d)}</span>
+              <span aria-hidden="true">${d.icone ? escapeHtml(d.icone) : iconeDocumento(d)}</span>
               <span>${escapeHtml(d.titulo || d.url)}</span>
             </a>
           </li>`).join('')}
