@@ -1466,18 +1466,6 @@ body:not(.home-page) .nav-toggle span {
     flex-shrink: 0;
 }
 
-.link-mapa {
-    display: block;
-    margin-top: 4px;
-    font-size: 13px;
-    font-weight: 600;
-    color: var(--accent-color);
-}
-
-.link-mapa:hover {
-    color: var(--accent-dark);
-}
-
 /* Barra de inscrição fixa no fundo do ecrã (só no telemóvel) */
 .cta-inscricao-mobile {
     display: none;

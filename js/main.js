@@ -1494,14 +1494,7 @@ async function configurarDetalheEvento(api) {
   if (imagem) imagem.classList.toggle('sem-imagem', !evento.imagem_url)
   if (dataEl) dataEl.textContent = api.formatarData(evento.data_evento)
   if (fimInscricoesEl) fimInscricoesEl.textContent = evento.data_fim_inscricoes ? api.formatarData(evento.data_fim_inscricoes) : '-'
-  if (localEl) {
-    if (evento.local) {
-      const mapa = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(evento.local)}`
-      localEl.innerHTML = `${escapeHtml(evento.local)}<a href="${mapa}" target="_blank" rel="noopener" class="link-mapa">Ver no mapa ↗</a>`
-    } else {
-      localEl.textContent = '-'
-    }
-  }
+  if (localEl) localEl.textContent = evento.local || '-'
   const [{ data: provasData }, { data: documentosData }] = await Promise.all([
     api.getProvasEvento(evento.id),
     api.getDocumentosEvento(evento.id)
