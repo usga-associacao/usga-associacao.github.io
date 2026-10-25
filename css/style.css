@@ -1370,6 +1370,15 @@ body:not(.home-page) .nav-toggle span {
     font-weight: 600;
 }
 
+/* Ícone de cada documento (escolhido no admin ou automático) */
+.documentos-lista a > span:first-child {
+    font-size: 20px;
+    line-height: 1;
+    width: 26px;
+    text-align: center;
+    flex-shrink: 0;
+}
+
 .documentos-lista a:hover {
     border-color: var(--accent-color);
     color: var(--accent-color);
