@@ -61,13 +61,22 @@ ul {
 }
 
 .btn-primary {
-    background-color: var(--primary-color);
+    background-color: var(--accent-dark);
     color: #fff;
 }
 
 .btn-primary:hover {
-    background-color: var(--secondary-color);
-    opacity: 0.9;
+    background-color: var(--accent-color);
+    opacity: 1;
+}
+
+button.btn:not(.btn-small) {
+    font-family: inherit;
+    font-size: 16px;
+}
+
+.hero-content .btn {
+    padding: 14px 32px;
 }
 
 .btn-small {
@@ -196,7 +205,7 @@ body.home-page .nav-link:hover {
 
 body.home-page .nav-link.active {
     color: #ffffff;
-    background-color: var(--accent-color);
+    background-color: var(--accent-dark);
     font-weight: 600;
 }
 
@@ -835,6 +844,11 @@ body:has(.hero-mountain-edge) {
     font-size: 14px;
 }
 
+.footer-col a:not(.logo) {
+    padding: 12px 0;
+    margin-bottom: 0;
+}
+
 .footer-col a:hover {
     color: #fff;
 }
@@ -844,7 +858,7 @@ body:has(.hero-mountain-edge) {
     padding-top: 20px;
     text-align: center;
     font-size: 13px;
-    color: #666;
+    color: #999;
 }
 
 /* --- RESPONSIVIDADE (MOBILE) --- */
@@ -1069,14 +1083,9 @@ body:has(.hero-mountain-edge) {
     display: block;
     width: 100%;
     height: 2px;
-    background-color: var(--primary-color);
+    background-color: var(--accent-dark);
     border-radius: 2px;
     transition: all 0.3s ease;
-}
-
-/* Cor das barras quando header não é transparente */
-body:not(.home-page) .nav-toggle span {
-    background-color: var(--primary-color);
 }
 
 /* Animação para X quando aberto */
@@ -1085,11 +1094,22 @@ body:not(.home-page) .nav-toggle span {
 .nav-toggle.open span:nth-child(3) { transform: translateY(-7px) rotate(-45deg); }
 
 @media (max-width: 768px) {
-    /* Botão do menu encostado ao "Login", à direita */
+    .header-container {
+        display: grid;
+        grid-template-columns: 1fr auto 1fr;
+    }
+
     .nav-toggle {
         display: flex;
-        margin-left: auto;
-        margin-right: 14px;
+        margin: 0 0 0 -4px;
+        justify-self: start;
+    }
+
+    .header-container .btn-primary {
+        justify-self: end;
+        white-space: nowrap;
+        padding: 12px 14px;
+        font-size: 15px;
     }
 
     /* O <nav> original de desktop já não é reaproveitado em mobile.
@@ -1170,7 +1190,7 @@ body:not(.home-page) .nav-toggle span {
 
 .mobile-nav-list a.active {
     color: #ffffff;
-    background-color: var(--accent-color);
+    background-color: var(--accent-dark);
     font-weight: 600;
 }
 
@@ -1992,4 +2012,3 @@ main > section:not(.hero-bg-slideshow) + section:not(.cta-section) {
         background-size: 220% 32%, auto, auto, auto;
     }
 }
-
