@@ -37,15 +37,14 @@ document.addEventListener('DOMContentLoaded', async function () {
     const navOriginal = document.querySelector('.nav')
     if (!header || !headerContainer || !navOriginal) return
 
-    // Botão hamburguer (mantido no header, junto ao botão de login)
+    // Botão hamburguer (primeiro elemento do header, à esquerda do logo)
     const navToggle = document.createElement('button')
     navToggle.type = 'button'
     navToggle.className = 'nav-toggle'
     navToggle.setAttribute('aria-label', 'Abrir menu')
     navToggle.setAttribute('aria-expanded', 'false')
     navToggle.innerHTML = '<span></span><span></span><span></span>'
-    const loginBtn = headerContainer.querySelector('.btn-primary')
-    headerContainer.insertBefore(navToggle, loginBtn)
+    headerContainer.prepend(navToggle)
 
     // Overlay + painel novos, anexados diretamente ao <body>
     const overlay = document.createElement('div')
@@ -149,7 +148,6 @@ document.addEventListener('DOMContentLoaded', async function () {
   if (loginBtn && sessao) {
     loginBtn.textContent = 'O meu Perfil'
     loginBtn.href = 'perfil.html'
-    loginBtn.style.backgroundColor = '#333'
   }
 
   if (isPagina('perfil.html') && api && !sessao) {
